@@ -1,26 +1,138 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * CSS Variables — mapeadas a src/config/theme.ts
+ * Task Final TF01: alterar apenas theme.ts para atualizar toda a identidade visual.
+ * Task Final TF02: alterar fontes em theme.ts + next/font no layout.tsx.
+ */
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Cores — Paleta oficial O Encontro 2026 */
+  --color-primary:               #ED1C24;  /* vermelho guará — CTAs */
+  --color-primary-foreground:    #FFFFFF;
+
+  --color-secondary:             #EDE6DA;  /* bege — cards, superfícies */
+  --color-secondary-foreground:  #2C2018;
+
+  --color-accent:                #CFA550;  /* dourado — detalhes, labels, ícones */
+  --color-accent-foreground:     #1C1410;
+
+  --color-background:            #F2EFE9;  /* off-white quente — fundo principal */
+  --color-foreground:            #1C1410;
+
+  --color-muted:                 #EAE3D8;  /* bege suave — fundos alternados */
+  --color-muted-foreground:      #7A6E6A;
+
+  --color-border:                #D8D0C5;
+  --color-input:                 #F2EFE9;
+  --color-ring:                  #CFA550;
+
+  --color-destructive:           #B91C1C;
+  --color-destructive-foreground:#FFFFFF;
+
+  --color-success:               #15803D;
+  --color-success-foreground:    #FFFFFF;
+
+  --color-warning:               #B45309;
+  --color-warning-foreground:    #FFFFFF;
+
+  --color-info:                  #1D4ED8;
+  --color-info-foreground:       #FFFFFF;
+
+  /* Tipografia oficial */
+  --font-display: 'Cormorant Garamond', Georgia, serif;
+  --font-sans:    'Inter', system-ui, sans-serif;
+  --font-detail:  'Manrope', system-ui, sans-serif;
+  --font-mono:    'JetBrains Mono', Menlo, monospace;
+
+  /* Border radius */
+  --radius:    8px;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+@layer base {
+  * {
+    @apply border-border;
+    box-sizing: border-box;
+  }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans;
+    font-feature-settings: "rlig" 1, "calt" 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Focus visible global — nunca remover outline sem substituto */
+  :focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  }
+
+  /* Respeitar prefers-reduced-motion */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer utilities {
+  /* Shimmer para skeletons */
+  @keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+
+  .animate-shimmer {
+    background: linear-gradient(
+      90deg,
+      var(--color-muted) 25%,
+      #E0D8CC 50%,
+      var(--color-muted) 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 2s linear infinite;
+  }
+
+  /* Fade in */
+  @keyframes fade-in {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+
+  .animate-fade-in {
+    animation: fade-in 0.2s ease-out;
+  }
+
+  /* Slide in up */
+  @keyframes slide-in-up {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .animate-slide-in-up {
+    animation: slide-in-up 0.3s ease-out;
+  }
+
+  /* Scale in (modais) */
+  @keyframes scale-in {
+    from { opacity: 0; transform: scale(0.95); }
+    to   { opacity: 1; transform: scale(1); }
+  }
+
+  .animate-scale-in {
+    animation: scale-in 0.2s ease-out;
+  }
 }
