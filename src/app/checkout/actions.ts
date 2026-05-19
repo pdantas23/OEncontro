@@ -1,6 +1,7 @@
 // Client-side — sem 'use server'
 import { createClient } from '@/lib/supabase/client'
 import { createOrderSchema } from '@/lib/validations/checkout'
+import { env } from '@/config/env'
 import type { CreateOrderResult } from '@/types/checkout'
 
 export async function createOrderAction(input: unknown): Promise<CreateOrderResult> {
@@ -81,7 +82,7 @@ export async function createOrderAction(input: unknown): Promise<CreateOrderResu
   }
 
   // Chama API HTTP para criar preference no Mercado Pago
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL
+  const apiUrl = env.NEXT_PUBLIC_API_URL
 
   const items = [
     { title: lot.name, quantity, unit_price: lot.price * 100 },
@@ -116,6 +117,13 @@ export async function createOrderAction(input: unknown): Promise<CreateOrderResu
     }
 
     const { init_point } = await mpResponse.json()
+
+    if (!init_point) {
+      console.error('[createOrderAction] Resposta da API sem init_point')
+      await supabase.rpc('release_ticket_slot', { p_lot_id: lotId, p_quantity: quantity })
+      await supabase.from('orders_encontro').update({ payment_status: 'failed' }).eq('id', orderId)
+      return { success: false, error: 'Erro ao iniciar pagamento. Tente novamente.' }
+    }
 
     // Redireciona para o Mercado Pago
     window.location.href = init_point
