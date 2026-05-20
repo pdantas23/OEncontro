@@ -2,7 +2,7 @@
 
 import { Suspense, useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
+import { apiFetch } from '@/services/api/client'
 import { CheckoutWizard } from '@/components/checkout/CheckoutWizard'
 import type { TicketLot } from '@/repositories/TicketLotRepository'
 import type { OrderBump } from '@/repositories/OrderBumpRepository'
@@ -28,21 +28,24 @@ function CheckoutInner() {
     }
 
     async function load() {
-      const supabase = createClient()
-      const [lotResult, bumpsResult] = await Promise.all([
-        supabase.from('ticket_lots_encontro').select('*').eq('id', lotId!).maybeSingle(),
-        supabase.from('order_bumps_encontro').select('*').eq('active', true).order('display_order', { ascending: true }),
-      ])
+      try {
+        const [lotData, bumpsData] = await Promise.all([
+          apiFetch<TicketLot>(`/lots/${lotId}`),
+          apiFetch<OrderBump[]>('/order-bumps'),
+        ])
 
-      const lotData = lotResult.data
-      if (!lotData || lotData.status !== 'active' || (lotData.total_limit - lotData.sold_count) <= 0) {
+        if (!lotData || lotData.status !== 'active' || (lotData.total_limit - lotData.sold_count) <= 0) {
+          router.replace('/#ingressos')
+          return
+        }
+
+        setLot(lotData)
+        setActiveBumps(bumpsData)
+        setLoading(false)
+      } catch (err) {
+        console.error('[checkout] Erro ao carregar dados:', err)
         router.replace('/#ingressos')
-        return
       }
-
-      setLot(lotData)
-      setActiveBumps(bumpsResult.data ?? [])
-      setLoading(false)
     }
     load()
   }, [lotId, orderId, router])

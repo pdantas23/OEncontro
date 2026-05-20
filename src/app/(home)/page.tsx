@@ -1,31 +1,22 @@
-import { Calendar, MapPin, Star } from 'lucide-react'
-import type { Metadata } from 'next'
 import Image from 'next/image'
-import Link from 'next/link'
-
-import { EventConfigRepository } from '@/repositories/EventConfigRepository'
-import { ScheduleRepository } from '@/repositories/ScheduleRepository'
-import { SpeakerRepository } from '@/repositories/SpeakerRepository'
-import { TicketLotRepository } from '@/repositories/TicketLotRepository'
+import type { Metadata } from 'next'
 
 import { ParaQuemCarousel } from '@/components/home/ParaQuemCarousel'
+import {
+  HeroDynamic,
+  ProgramacaoSection,
+  PalestrantesSection,
+  IngressosSection,
+} from '@/components/home/DynamicSections'
 import { buildMetadata } from '@/components/shared/SEOWrapper'
 import { LandingPageTracker } from '@/components/tracking/LandingPageTracker'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/Accordion'
 import { Avatar } from '@/components/ui/Avatar'
-import { Badge } from '@/components/ui/Badge'
-import { Button } from '@/components/ui/Button'
 import { Carousel } from '@/components/ui/Carousel'
-import { ProgramacaoTabs } from '@/components/ui/ProgramacaoTabs'
-import { Skeleton } from '@/components/ui/Skeleton'
 import { StarRating } from '@/components/ui/StarRating'
 
-import { cn } from '@/utils/cn'
-import { formatLongDate } from '@/utils/dates'
-import { formatCurrency, getInitials } from '@/utils/format'
-
 // ---------------------------------------------------------------------------
-// Metadata
+// Metadata (estática — funciona em static export)
 // ---------------------------------------------------------------------------
 
 export const metadata: Metadata = {
@@ -37,42 +28,7 @@ export const metadata: Metadata = {
 }
 
 // ---------------------------------------------------------------------------
-// JSON-LD
-// ---------------------------------------------------------------------------
-
-function EventJsonLd({ config }: { config: Awaited<ReturnType<typeof EventConfigRepository.find>> }) {
-  const jsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'Event',
-    name: config?.name ?? 'O Encontro 2026',
-    description:
-      config?.description ??
-      'Um encontro criado para cerimonialistas e profissionais de eventos que desejam fortalecer conexões, ampliar visão de mercado e viver uma experiência construída nos detalhes.',
-    startDate: config?.date ?? '2026-01-01',
-    location: {
-      '@type': 'Place',
-      name: config?.location ?? 'A confirmar',
-    },
-    offers: {
-      '@type': 'Offer',
-      availability:
-        config?.sale_status === 'soldout'
-          ? 'https://schema.org/SoldOut'
-          : 'https://schema.org/InStock',
-      url: `${process.env.NEXT_PUBLIC_APP_URL}/checkout`,
-    },
-  }
-
-  return (
-    <script
-      type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-    />
-  )
-}
-
-// ---------------------------------------------------------------------------
-// FAQ data
+// FAQ data (estático)
 // ---------------------------------------------------------------------------
 
 const FAQ_ITEMS = [
@@ -98,7 +54,6 @@ const FAQ_ITEMS = [
   },
   {
     q: 'O almoço está incluso?',
-    // TODO TF06 — confirmar política de almoço conforme lotes
     a: 'Depende do tipo de ingresso escolhido. Verifique os benefícios de cada lote na seção de ingressos.',
   },
   {
@@ -120,24 +75,12 @@ const FAQ_ITEMS = [
 ]
 
 // ---------------------------------------------------------------------------
-// Page
+// Page (Server Component — layout estático, seções dinâmicas via Client)
 // ---------------------------------------------------------------------------
 
-export default async function HomePage() {
-  const [lots, speakers, schedule, config] = await Promise.all([
-    TicketLotRepository.findActive(),
-    SpeakerRepository.findAll(),
-    ScheduleRepository.findAll(),
-    EventConfigRepository.find(),
-  ])
-
-  const isSaleOpen = !config || config.sale_status === 'open'
-  const isSoldOut = config?.sale_status === 'soldout'
-  const lowStockThreshold = config?.low_stock_threshold ?? 20
-
+export default function HomePage() {
   return (
     <main id="main-content">
-      <EventJsonLd config={config} />
       <LandingPageTracker />
 
       {/* SEÇÃO 1 — HERO */}
@@ -146,7 +89,6 @@ export default async function HomePage() {
         className="relative flex min-h-[70vh] flex-col items-center justify-center overflow-hidden px-container-x py-2 pb-12 text-center"
         aria-labelledby="hero-title"
       >
-        {/* Fundo: padrão guará full-width */}
         <div
           className="pointer-events-none absolute inset-0"
           style={{
@@ -157,8 +99,6 @@ export default async function HomePage() {
           }}
           aria-hidden="true"
         />
-
-        {/* Vignette central — garante leitura do texto sem apagar a textura nas bordas */}
         <div
           className="pointer-events-none absolute inset-0"
           style={{
@@ -167,19 +107,13 @@ export default async function HomePage() {
           }}
           aria-hidden="true"
         />
-
-        {/* Fade bottom para transição suave com a próxima seção */}
         <div
           className="pointer-events-none absolute bottom-0 left-0 right-0 h-32"
-          style={{
-            background: 'linear-gradient(to bottom, transparent, #EDE6DA)',
-          }}
+          style={{ background: 'linear-gradient(to bottom, transparent, #EDE6DA)' }}
           aria-hidden="true"
         />
 
-        {/* Conteúdo */}
         <div className="relative z-10 flex flex-col items-center">
-          {/* Logo */}
           <Image
             src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/logo2.png`}
             alt="O Encontro 2026"
@@ -189,7 +123,6 @@ export default async function HomePage() {
             priority
           />
 
-          {/* Título */}
           <h1
             id="hero-title"
             className="font-display text-4xl font-semibold leading-[1.15] text-foreground sm:text-5xl lg:text-6xl"
@@ -198,46 +131,17 @@ export default async function HomePage() {
             <span className="text-accent">mercado e conexões reais.</span>
           </h1>
 
-          {/* Subtítulo */}
           <p className="mt-8 max-w-2xl text-base leading-relaxed text-muted-foreground sm:text-lg">
             Um encontro criado para cerimonialistas, organizadores e profissionais de eventos
             que desejam fortalecer conexões, ampliar visão de mercado e viver uma experiência
             construída nos detalhes.
           </p>
 
-          {/* Data e local */}
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-5 font-detail text-sm text-muted-foreground">
-            <div className="flex items-center gap-1.5">
-              <Calendar className="h-4 w-4 text-accent" aria-hidden="true" />
-              {/* TODO TF04 — substituir pela data real */}
-              <span>{config?.date ? formatLongDate(config.date) : 'Data a confirmar'}</span>
-            </div>
-            <div className="h-1 w-1 rounded-full bg-muted-foreground/40" aria-hidden="true" />
-            <div className="flex items-center gap-1.5">
-              <MapPin className="h-4 w-4 text-accent" aria-hidden="true" />
-              {/* TODO TF04 — substituir pelo local real */}
-              <span>{config?.location ?? 'Local a confirmar'}</span>
-            </div>
-          </div>
-
-          {/* CTAs */}
-          <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:mt-10 sm:flex-row">
-            {isSoldOut ? (
-              <Button size="lg" className="w-[280px] rounded-full sm:w-[220px]" disabled>Esgotado</Button>
-            ) : isSaleOpen ? (
-              <Button size="lg" className="w-[280px] rounded-full sm:w-[220px]" asChild>
-                <a href="#ingressos">Garantir meu ingresso</a>
-              </Button>
-            ) : (
-              <Button size="lg" className="w-[280px] rounded-full sm:w-[220px]" disabled>Vendas encerradas</Button>
-            )}
-            <Button variant="outline" size="lg" className="w-[280px] rounded-full sm:w-[220px]" asChild>
-              <a href="#programacao">Ver programação</a>
-            </Button>
-          </div>
+          {/* Data, local e CTAs vêm da API em runtime */}
+          <HeroDynamic />
         </div>
       </section>
-      
+
       <div style={{ background: 'linear-gradient(180deg, #EDE6DA 0%, #F2EFE9 100%)' }}>
         {/* SEÇÃO 2 — SOBRE O EVENTO */}
         <section
@@ -245,7 +149,6 @@ export default async function HomePage() {
           className="relative overflow-hidden px-container-x py-10"
           aria-labelledby="sobre-title"
         >
-          {/* Guará decorativo — espalhado ao fundo, texto sempre acima via z-10 */}
           <div className="pointer-events-none absolute inset-0 z-0 flex items-end justify-end" aria-hidden="true">
             <Image
               src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/assets/guara-realista.png`}
@@ -256,8 +159,6 @@ export default async function HomePage() {
               style={{ opacity: 0.63 }}
             />
           </div>
-
-          {/* Fade — protege apenas o título no desktop, sem afetar a imagem abaixo */}
           <div
             className="pointer-events-none absolute inset-0 z-[5] hidden sm:block"
             style={{
@@ -296,7 +197,6 @@ export default async function HomePage() {
                   dos detalhes.
                 </p>
               </div>
-
               <div className="flex flex-col gap-5 leading-relaxed">
                 <p>
                   As palestras, conversas e experiências foram pensadas para profissionais
@@ -315,9 +215,9 @@ export default async function HomePage() {
 
         {/* SEÇÃO 3 — PARA QUEM É */}
         <section
-        id="para-quem"
-        className="relative overflow-hidden px-container-x py-section-y"
-        aria-labelledby="para-quem-title"
+          id="para-quem"
+          className="relative overflow-hidden px-container-x py-section-y"
+          aria-labelledby="para-quem-title"
         >
           <div className="pointer-events-none absolute inset-0 z-0 flex items-end justify-start" aria-hidden="true">
             <Image
@@ -356,14 +256,13 @@ export default async function HomePage() {
         </section>
       </div>
 
-      {/* SEÇÃO 4 — PROGRAMAÇÃO */}
+      {/* SEÇÃO 4 — PROGRAMAÇÃO (dinâmica via API) */}
       <section
         id="programacao"
         className="relative overflow-hidden px-container-x py-section-y"
         style={{ background: 'linear-gradient(180deg, #EAE3D8 0%, #F2EFE9 100%)' }}
         aria-labelledby="programacao-title"
       >
-        {/* Guará decorativo — espalhado ao fundo, texto sempre acima via z-10 */}
         <div className="pointer-events-none absolute inset-0 z-0 flex items-end justify-end" aria-hidden="true">
           <Image
             src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/assets/guara-realista.png`}
@@ -396,30 +295,12 @@ export default async function HomePage() {
           </p>
 
           <div className="mt-12">
-            {schedule.length > 0 ? (
-              <ProgramacaoTabs schedule={schedule} />
-            ) : (
-              <div className="space-y-6" aria-label="Programação em breve">
-                <p className="text-center text-sm text-muted-foreground">
-                  A programação completa será divulgada em breve.
-                </p>
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="flex gap-4">
-                    <Skeleton className="h-8 w-8 rounded-full shrink-0" />
-                    <div className="flex-1 space-y-2">
-                      <Skeleton className="h-3 w-16" />
-                      <Skeleton className="h-4 w-3/4" />
-                      <Skeleton className="h-3 w-1/2" />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
+            <ProgramacaoSection />
           </div>
         </div>
       </section>
 
-      {/* SEÇÃO 5 — PALESTRANTES */}
+      {/* SEÇÃO 5 — PALESTRANTES (dinâmica via API) */}
       <section
         id="palestrantes"
         className="bg-background px-container-x py-section-y"
@@ -445,72 +326,7 @@ export default async function HomePage() {
           </p>
 
           <div className="mt-12">
-            {speakers.length > 0 ? (
-              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                {speakers.map((speaker) => (
-                  <article
-                    key={speaker.id}
-                    className="group flex flex-col gap-4 rounded-lg border border-border bg-secondary p-6 transition-colors duration-300 hover:border-accent/40"
-                  >
-                    <div className="flex items-center gap-4">
-                      {speaker.photo_url ? (
-                        <div className="relative h-16 w-16 overflow-hidden rounded-full border-2 border-accent/20">
-                          <Image
-                            src={speaker.photo_url}
-                            alt={speaker.name}
-                            fill
-                            className="object-cover transition-transform duration-300 group-hover:scale-105"
-                            sizes="64px"
-                          />
-                        </div>
-                      ) : (
-                        <Avatar
-                          fallback={getInitials(speaker.name)}
-                          size="lg"
-                          className="border-2 border-accent/20"
-                        />
-                      )}
-                      <div className="min-w-0">
-                        <h3 className="font-display font-semibold text-foreground leading-tight">
-                          {speaker.name}
-                        </h3>
-                        {speaker.role && (
-                          <p className="font-detail text-xs text-muted-foreground mt-0.5">{speaker.role}</p>
-                        )}
-                      </div>
-                    </div>
-
-                    {speaker.bio && (
-                      <p className="text-sm text-muted-foreground leading-relaxed line-clamp-3">
-                        {speaker.bio}
-                      </p>
-                    )}
-                  </article>
-                ))}
-              </div>
-            ) : (
-              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                <p className="col-span-full text-center text-sm text-muted-foreground">
-                  Os convidados serão anunciados em breve.
-                </p>
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="flex flex-col gap-4 rounded-lg border border-border bg-secondary p-6">
-                    <div className="flex items-center gap-4">
-                      <Skeleton className="h-16 w-16 rounded-full shrink-0" />
-                      <div className="flex-1 space-y-2">
-                        <Skeleton className="h-4 w-3/4" />
-                        <Skeleton className="h-3 w-1/2" />
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <Skeleton className="h-3 w-full" />
-                      <Skeleton className="h-3 w-full" />
-                      <Skeleton className="h-3 w-2/3" />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
+            <PalestrantesSection />
           </div>
         </div>
       </section>
@@ -541,7 +357,6 @@ export default async function HomePage() {
             Experiências, conexões e histórias construídas em cada edição.
           </p>
 
-          {/* Carrossel de fotos — TODO TF11 */}
           <div className="mt-12">
             <Carousel
               items={[
@@ -585,27 +400,11 @@ export default async function HomePage() {
             Experiências compartilhadas por profissionais que viveram o encontro.
           </p>
 
-          {/* Depoimentos — TODO TF12 */}
           <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {[
-              {
-                name: 'Participante A',
-                role: 'Cerimonialista',
-                rating: 5,
-                text: 'Depoimento real em breve.',
-              },
-              {
-                name: 'Participante B',
-                role: 'Organizadora de eventos',
-                rating: 5,
-                text: 'Depoimento real em breve.',
-              },
-              {
-                name: 'Participante C',
-                role: 'Produtora de eventos',
-                rating: 5,
-                text: 'Depoimento real em breve.',
-              },
+              { name: 'Participante A', role: 'Cerimonialista', rating: 5, text: 'Depoimento real em breve.' },
+              { name: 'Participante B', role: 'Organizadora de eventos', rating: 5, text: 'Depoimento real em breve.' },
+              { name: 'Participante C', role: 'Produtora de eventos', rating: 5, text: 'Depoimento real em breve.' },
             ].map(({ name, role, rating, text }) => (
               <article
                 key={name}
@@ -628,7 +427,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* SEÇÃO 8 — INGRESSOS */}
+      {/* SEÇÃO 8 — INGRESSOS (dinâmica via API) */}
       <section
         id="ingressos"
         className="px-container-x py-section-y"
@@ -652,102 +451,11 @@ export default async function HomePage() {
           </h2>
           <p className="mx-auto mt-4 max-w-md text-center font-detail text-sm text-muted-foreground">
             Vagas limitadas para preservar a experiência do encontro.
-            Pagamento via Pix ou cartão de crédito.
+            Pagamento seguro via Mercado Pago.
           </p>
 
           <div className="mt-12">
-            {lots.length > 0 ? (
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {lots.map((lot) => {
-                  const available = lot.total_limit - lot.sold_count
-                  const isLotSoldOut = lot.status === 'soldout' || available <= 0
-                  const isLowStock = !isLotSoldOut && available <= lowStockThreshold
-                  const benefits = Array.isArray(lot.benefits) ? lot.benefits as string[] : []
-
-                  return (
-                    <article
-                      key={lot.id}
-                      className={cn(
-                        'relative flex flex-col gap-4 rounded-lg border p-6 transition-colors duration-300',
-                        isLotSoldOut
-                          ? 'border-border bg-secondary opacity-60'
-                          : 'border-accent/30 bg-background hover:border-accent/60',
-                      )}
-                      aria-label={`Lote ${lot.name}${isLotSoldOut ? ' — esgotado' : ''}`}
-                    >
-                      {isLowStock && !isLotSoldOut && (
-                        <Badge variant="warning" className="absolute -top-2.5 left-4">
-                          Últimas {available} vagas
-                        </Badge>
-                      )}
-
-                      {isLotSoldOut && (
-                        <Badge variant="secondary" className="absolute -top-2.5 left-4">
-                          Esgotado
-                        </Badge>
-                      )}
-
-                      <div>
-                        <h3 className="font-display text-lg font-semibold text-foreground">
-                          {lot.name}
-                        </h3>
-                        {lot.description && (
-                          <p className="font-detail mt-1 text-xs text-muted-foreground">{lot.description}</p>
-                        )}
-                      </div>
-
-                      <p className="font-display text-3xl font-semibold text-accent">
-                        {formatCurrency(lot.price)}
-                      </p>
-
-                      {benefits.length > 0 && (
-                        <ul className="flex flex-col gap-1.5">
-                          {benefits.map((b, i) => (
-                            <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
-                              <Star className="mt-0.5 h-3.5 w-3.5 shrink-0 text-accent" aria-hidden="true" />
-                              {b}
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-
-                      {!isLotSoldOut && (
-                        <p className="font-detail text-xs text-muted-foreground">
-                          {available} {available === 1 ? 'vaga disponível' : 'vagas disponíveis'}
-                        </p>
-                      )}
-
-                      <Button
-                        className="mt-auto w-full"
-                        disabled={isLotSoldOut || !isSaleOpen}
-                        asChild
-                      >
-                        <Link
-                          href={isLotSoldOut || !isSaleOpen ? '#' : `/checkout?lot=${lot.id}`}
-                          aria-disabled={isLotSoldOut || !isSaleOpen}
-                          tabIndex={isLotSoldOut || !isSaleOpen ? -1 : undefined}
-                        >
-                          {isLotSoldOut ? 'Esgotado' : !isSaleOpen ? 'Vendas encerradas' : 'Garantir minha participação'}
-                        </Link>
-                      </Button>
-                    </article>
-                  )
-                })}
-              </div>
-            ) : (
-              <div className="flex flex-col items-center gap-4 rounded-lg border border-dashed border-border bg-background/60 p-12 text-center">
-                <p className="font-detail text-sm text-muted-foreground">
-                  Os lotes de ingresso serão publicados em breve.
-                </p>
-                {[1, 2].map((i) => (
-                  <div key={i} className="w-full max-w-xs space-y-3 rounded-lg border border-border bg-secondary p-6">
-                    <Skeleton className="h-5 w-1/2" />
-                    <Skeleton className="h-8 w-1/3" />
-                    <Skeleton className="h-10 w-full rounded" />
-                  </div>
-                ))}
-              </div>
-            )}
+            <IngressosSection />
           </div>
         </div>
       </section>
