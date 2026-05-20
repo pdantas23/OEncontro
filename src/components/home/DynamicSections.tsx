@@ -10,7 +10,7 @@
  * Dados estáticos (FAQ, Sobre, Memórias, Depoimentos) ficam no Server Component.
  */
 
-import { Calendar, MapPin, Star, Users } from 'lucide-react'
+import { Calendar, MapPin, Star } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 
@@ -317,12 +317,12 @@ export function IngressosSection() {
                 )}
               </div>
 
-              {/* Preço — vermelho da marca, destaque máximo */}
+              {/* Preço — vermelho da marca, fonte formal */}
               <div className="text-center">
-                <p className="font-display font-bold text-primary">
+                <p className="font-sans font-bold tracking-tight text-primary">
                   {priceParts ? (
                     <>
-                      <span className="text-lg">{priceParts[1]}</span>
+                      <span className="text-base font-semibold">{priceParts[1]}</span>
                       <span className="text-4xl sm:text-5xl">{priceParts[2]}</span>
                     </>
                   ) : (
@@ -341,14 +341,6 @@ export function IngressosSection() {
                     </li>
                   ))}
                 </ul>
-              )}
-
-              {/* Vagas disponíveis */}
-              {!isLotSoldOut && (
-                <p className="flex items-center justify-center gap-1.5 font-detail text-xs text-muted-foreground">
-                  <Users className="h-3.5 w-3.5" aria-hidden="true" />
-                  {available} {available === 1 ? 'vaga disponível' : 'vagas disponíveis'}
-                </p>
               )}
 
               {/* CTA */}
