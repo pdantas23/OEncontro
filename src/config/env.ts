@@ -31,8 +31,6 @@ const envSchema = z.object({
   PAYMENT_SECRET_KEY: z.string().optional(),
   PAYMENT_WEBHOOK_SECRET: z.string().optional(),
   NEXT_PUBLIC_PAYMENT_PUBLIC_KEY: z.string().optional(),
-  NEXT_PUBLIC_MP_SANDBOX: z.string().default('true'),
-
   // Resend
   RESEND_API_KEY: z.string().optional(),
   RESEND_FROM_EMAIL: z.string().email().default('noreply@royalhubacademy.com'),
@@ -63,7 +61,6 @@ function getEnvVars() {
     PAYMENT_SECRET_KEY: process.env.PAYMENT_SECRET_KEY,
     PAYMENT_WEBHOOK_SECRET: process.env.PAYMENT_WEBHOOK_SECRET,
     NEXT_PUBLIC_PAYMENT_PUBLIC_KEY: process.env.NEXT_PUBLIC_PAYMENT_PUBLIC_KEY,
-    NEXT_PUBLIC_MP_SANDBOX: process.env.NEXT_PUBLIC_MP_SANDBOX,
     RESEND_API_KEY: process.env.RESEND_API_KEY,
     RESEND_FROM_EMAIL: process.env.RESEND_FROM_EMAIL,
     RESEND_FROM_NAME: process.env.RESEND_FROM_NAME,
