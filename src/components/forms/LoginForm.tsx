@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Eye, EyeOff } from 'lucide-react'
@@ -12,7 +12,6 @@ import { adminLoginSchema, type AdminLoginInput } from '@/lib/validations/auth'
 import { adminSignInAction } from '@/app/login/actions'
 
 export function LoginForm() {
-  const router = useRouter()
   const searchParams = useSearchParams()
   const redirectTo = searchParams.get('redirect') ?? '/admin/dashboard'
   const isUnauthorized = searchParams.get('error') === 'unauthorized'
@@ -38,10 +37,11 @@ export function LoginForm() {
       return
     }
 
-    // NÃO usar router.refresh() — projeto é static export
-    // (next.config.ts: output 'export'), e refresh() depende de
-    // servidor que não existe nesse modo.
-    router.push(redirectTo)
+    // static export: usar window.location ao invés de router.push
+    // (router.push depende de route data files .txt que o Hostinger
+    // pode não servir corretamente, travando a navegação)
+    const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? ''
+    window.location.href = `${basePath}${redirectTo}`
   }
 
   return (
