@@ -1,14 +1,15 @@
 'use client'
 
 import { Suspense, useEffect, useState } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import { apiFetch } from '@/services/api/client'
 import { CheckoutWizard } from '@/components/checkout/CheckoutWizard'
 import type { TicketLot } from '@/repositories/TicketLotRepository'
 import type { OrderBump } from '@/repositories/OrderBumpRepository'
 
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? ''
+
 function CheckoutInner() {
-  const router = useRouter()
   const searchParams = useSearchParams()
   const lotId = searchParams.get('lot') ?? searchParams.get('lot_id')
   const orderId = searchParams.get('order_id')
@@ -18,12 +19,14 @@ function CheckoutInner() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    // static export: window.location em vez de router.replace
+    // (route data files não confiáveis no Hostinger)
     if (orderId) {
-      router.replace(`/obrigado?order_id=${orderId}`)
+      window.location.replace(`${basePath}/obrigado?order_id=${orderId}`)
       return
     }
     if (!lotId) {
-      router.replace('/')
+      window.location.replace(`${basePath}/`)
       return
     }
 
@@ -35,7 +38,7 @@ function CheckoutInner() {
         ])
 
         if (!lotData || lotData.status !== 'active' || (lotData.total_limit - lotData.sold_count) <= 0) {
-          router.replace('/#ingressos')
+          window.location.replace(`${basePath}/#ingressos`)
           return
         }
 
@@ -44,11 +47,11 @@ function CheckoutInner() {
         setLoading(false)
       } catch (err) {
         console.error('[checkout] Erro ao carregar dados:', err)
-        router.replace('/#ingressos')
+        window.location.replace(`${basePath}/#ingressos`)
       }
     }
     load()
-  }, [lotId, orderId, router])
+  }, [lotId, orderId])
 
   if (loading) {
     return (
