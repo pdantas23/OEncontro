@@ -246,18 +246,19 @@ export function IngressosSection() {
   }
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="flex flex-wrap justify-center gap-6">
       {lots.map((lot) => {
         const available = lot.total_limit - lot.sold_count
         const isLotSoldOut = lot.status === 'soldout' || available <= 0
         const isLowStock = !isLotSoldOut && available <= lowStockThreshold
         const benefits = Array.isArray(lot.benefits) ? lot.benefits as string[] : []
+        const imageUrl = lot.image_url
 
         return (
           <article
             key={lot.id}
             className={cn(
-              'relative flex flex-col gap-4 rounded-lg border p-6 transition-colors duration-300',
+              'relative flex w-full max-w-sm flex-col gap-4 overflow-hidden rounded-lg border transition-colors duration-300',
               isLotSoldOut
                 ? 'border-border bg-secondary opacity-60'
                 : 'border-accent/30 bg-background hover:border-accent/60',
@@ -265,52 +266,68 @@ export function IngressosSection() {
             aria-label={`Lote ${lot.name}${isLotSoldOut ? ' — esgotado' : ''}`}
           >
             {isLowStock && !isLotSoldOut && (
-              <Badge variant="warning" className="absolute -top-2.5 left-4">
+              <Badge variant="warning" className="absolute top-3 left-4 z-10">
                 Últimas {available} vagas
               </Badge>
             )}
             {isLotSoldOut && (
-              <Badge variant="secondary" className="absolute -top-2.5 left-4">
+              <Badge variant="secondary" className="absolute top-3 left-4 z-10">
                 Esgotado
               </Badge>
             )}
-            <div>
-              <h3 className="font-display text-lg font-semibold text-foreground">{lot.name}</h3>
-              {lot.description && (
-                <p className="font-detail mt-1 text-xs text-muted-foreground">{lot.description}</p>
-              )}
-            </div>
-            <p className="font-display text-3xl font-semibold text-accent">
-              {formatCurrency(lot.price)}
-            </p>
-            {benefits.length > 0 && (
-              <ul className="flex flex-col gap-1.5">
-                {benefits.map((b, i) => (
-                  <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
-                    <Star className="mt-0.5 h-3.5 w-3.5 shrink-0 text-accent" aria-hidden="true" />
-                    {b}
-                  </li>
-                ))}
-              </ul>
+
+            {/* Imagem do ingresso */}
+            {imageUrl && (
+              <div className="relative aspect-[16/9] w-full overflow-hidden">
+                <Image
+                  src={imageUrl}
+                  alt={lot.name}
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 640px) 100vw, 384px"
+                />
+              </div>
             )}
-            {!isLotSoldOut && (
-              <p className="font-detail text-xs text-muted-foreground">
-                {available} {available === 1 ? 'vaga disponível' : 'vagas disponíveis'}
+
+            <div className="flex flex-1 flex-col gap-4 p-6 pt-3">
+              <div>
+                <h3 className="font-display text-lg font-semibold text-foreground">{lot.name}</h3>
+                {lot.description && (
+                  <p className="font-detail mt-1 text-xs text-muted-foreground">{lot.description}</p>
+                )}
+              </div>
+              <p className="font-display text-3xl font-semibold text-accent">
+                {formatCurrency(lot.price)}
               </p>
-            )}
-            <Button
-              className="mt-auto w-full"
-              disabled={isLotSoldOut || !isSaleOpen}
-              asChild
-            >
-              <Link
-                href={isLotSoldOut || !isSaleOpen ? '#' : `/checkout?lot=${lot.id}`}
-                aria-disabled={isLotSoldOut || !isSaleOpen}
-                tabIndex={isLotSoldOut || !isSaleOpen ? -1 : undefined}
+              {benefits.length > 0 && (
+                <ul className="flex flex-col gap-1.5">
+                  {benefits.map((b, i) => (
+                    <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
+                      <Star className="mt-0.5 h-3.5 w-3.5 shrink-0 text-accent" aria-hidden="true" />
+                      {b}
+                    </li>
+                  ))}
+                </ul>
+              )}
+              {!isLotSoldOut && (
+                <p className="font-detail text-xs text-muted-foreground">
+                  {available} {available === 1 ? 'vaga disponível' : 'vagas disponíveis'}
+                </p>
+              )}
+              <Button
+                className="mt-auto w-full"
+                disabled={isLotSoldOut || !isSaleOpen}
+                asChild
               >
-                {isLotSoldOut ? 'Esgotado' : !isSaleOpen ? 'Vendas encerradas' : 'Garantir minha participação'}
-              </Link>
-            </Button>
+                <Link
+                  href={isLotSoldOut || !isSaleOpen ? '#' : `/checkout?lot=${lot.id}`}
+                  aria-disabled={isLotSoldOut || !isSaleOpen}
+                  tabIndex={isLotSoldOut || !isSaleOpen ? -1 : undefined}
+                >
+                  {isLotSoldOut ? 'Esgotado' : !isSaleOpen ? 'Vendas encerradas' : 'Garantir minha participação'}
+                </Link>
+              </Button>
+            </div>
           </article>
         )
       })}
