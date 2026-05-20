@@ -100,7 +100,7 @@ export function KpiCards({ initial }: KpiCardsProps) {
               <dt className="text-xs font-medium text-muted-foreground">{card.label}</dt>
               <Icon className={`h-4 w-4 ${card.color}`} aria-hidden="true" />
             </div>
-            <dd className="mt-2 font-display text-2xl font-bold text-foreground tabular-nums">
+            <dd className="mt-2 font-sans text-2xl font-bold text-foreground tabular-nums">
               {card.value}
             </dd>
           </div>

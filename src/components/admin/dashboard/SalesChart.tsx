@@ -1,10 +1,5 @@
 'use client'
 
-/**
- * SalesChart — Gráfico de vendas por dia (recharts).
- * Recebe dados já agregados do servidor — zero processamento no cliente.
- */
-
 import {
   AreaChart,
   Area,
@@ -36,39 +31,41 @@ export function SalesChart({ data }: SalesChartProps) {
   }
 
   return (
-    <div className="rounded-lg border border-border bg-card p-5">
-      <h2 className="mb-4 text-sm font-semibold text-foreground">Vendas (últimos 30 dias)</h2>
-      <ResponsiveContainer width="100%" height={220}>
-        <AreaChart data={data} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
+    <div className="rounded-lg border border-border bg-card p-6">
+      <h2 className="mb-6 font-sans text-sm font-semibold text-foreground">Vendas — últimos 30 dias</h2>
+      <ResponsiveContainer width="100%" height={260}>
+        <AreaChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
           <defs>
             <linearGradient id="salesGradient" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#C9A84C" stopOpacity={0.3} />
-              <stop offset="95%" stopColor="#C9A84C" stopOpacity={0} />
+              <stop offset="0%" stopColor="#C9A84C" stopOpacity={0.25} />
+              <stop offset="100%" stopColor="#C9A84C" stopOpacity={0.02} />
             </linearGradient>
           </defs>
-          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
           <XAxis
             dataKey="date"
             tickFormatter={formatDay}
             tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }}
             tickLine={false}
             axisLine={false}
+            dy={8}
           />
           <YAxis
-            tickFormatter={(v: number) => formatCurrency(v)}
+            tickFormatter={(v: number) => `R$${v}`}
             tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }}
             tickLine={false}
             axisLine={false}
-            width={70}
+            width={60}
           />
           <Tooltip
             formatter={(value) => [formatCurrency(Number(value)), 'Receita']}
-            labelFormatter={(label) => `Data: ${formatDay(String(label))}`}
+            labelFormatter={(label) => formatDay(String(label))}
             contentStyle={{
               background: 'hsl(var(--card))',
               border: '1px solid hsl(var(--border))',
               borderRadius: '8px',
               fontSize: 12,
+              padding: '8px 12px',
             }}
           />
           <Area
@@ -77,6 +74,8 @@ export function SalesChart({ data }: SalesChartProps) {
             stroke="#C9A84C"
             strokeWidth={2}
             fill="url(#salesGradient)"
+            dot={false}
+            activeDot={{ r: 4, stroke: '#C9A84C', strokeWidth: 2, fill: 'hsl(var(--card))' }}
           />
         </AreaChart>
       </ResponsiveContainer>

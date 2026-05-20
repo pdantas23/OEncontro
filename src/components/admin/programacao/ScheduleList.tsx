@@ -1,12 +1,11 @@
 'use client'
 
 /**
- * ScheduleList — CRUD + drag-and-drop de reordenação.
- * Usa @dnd-kit/sortable com DragHandle do M2.
+ * ScheduleList — CRUD + drag-and-drop.
+ * Ao reordenar, os horários acompanham o slot/posição (não o palestrante).
  */
 
 import { useState, useTransition } from 'react'
-import { useRouter } from 'next/navigation'
 import {
   DndContext,
   closestCenter,
@@ -42,7 +41,7 @@ import type { ScheduleItemWithSpeaker } from '@/repositories/ScheduleRepository'
 import type { Speaker } from '@/repositories/SpeakerRepository'
 
 // ---------------------------------------------------------------------------
-// Form
+// Form — sem campo Ordem (gerenciado automaticamente pelo drag)
 // ---------------------------------------------------------------------------
 
 function ScheduleForm({
@@ -58,12 +57,15 @@ function ScheduleForm({
 }) {
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
-  const router = useRouter()
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setError(null)
-    const data = Object.fromEntries(new FormData(e.currentTarget))
+    const fd = new FormData(e.currentTarget)
+    const data = {
+      ...Object.fromEntries(fd),
+      display_order: item?.display_order ?? nextOrder ?? 0,
+    }
     startTransition(async () => {
       const result = item
         ? await updateScheduleItemAction(item.id, data)
@@ -77,30 +79,12 @@ function ScheduleForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       {error && <Alert variant="destructive">{error}</Alert>}
-      <div className="grid grid-cols-2 gap-3">
-        <div>
-          <label className="mb-1.5 block text-sm font-medium text-foreground">Dia</label>
-          <Input name="day" type="number" min="1" defaultValue={item?.day ?? 1} required />
-        </div>
-        <div>
-          <label className="mb-1.5 block text-sm font-medium text-foreground">Ordem</label>
-          <Input name="display_order" type="number" min="0" defaultValue={item?.display_order ?? nextOrder ?? 0} required />
-        </div>
-      </div>
-      <div className="grid grid-cols-2 gap-3">
-        <div>
-          <label className="mb-1.5 block text-sm font-medium text-foreground">Início</label>
-          <Input name="start_time" type="time" defaultValue={item?.start_time ?? ''} required />
-        </div>
-        <div>
-          <label className="mb-1.5 block text-sm font-medium text-foreground">Fim (opcional)</label>
-          <Input name="end_time" type="time" defaultValue={item?.end_time ?? ''} />
-        </div>
-      </div>
+
       <div>
         <label className="mb-1.5 block text-sm font-medium text-foreground">Título da palestra</label>
         <Input name="talk_title" defaultValue={item?.talk_title ?? ''} required />
       </div>
+
       <div>
         <label className="mb-1.5 block text-sm font-medium text-foreground">Palestrante (opcional)</label>
         <select name="speaker_id" defaultValue={item?.speaker_id ?? ''} className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
@@ -108,10 +92,27 @@ function ScheduleForm({
           {speakers.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
         </select>
       </div>
+
+      <div className="grid grid-cols-3 gap-3">
+        <div>
+          <label className="mb-1.5 block text-sm font-medium text-foreground">Dia</label>
+          <Input name="day" type="number" min="1" defaultValue={item?.day ?? 1} required />
+        </div>
+        <div>
+          <label className="mb-1.5 block text-sm font-medium text-foreground">Início</label>
+          <Input name="start_time" type="time" defaultValue={item?.start_time ?? ''} required />
+        </div>
+        <div>
+          <label className="mb-1.5 block text-sm font-medium text-foreground">Fim</label>
+          <Input name="end_time" type="time" defaultValue={item?.end_time ?? ''} />
+        </div>
+      </div>
+
       <div>
         <label className="mb-1.5 block text-sm font-medium text-foreground">Descrição (opcional)</label>
         <Textarea name="description" defaultValue={item?.description ?? ''} rows={2} />
       </div>
+
       <div className="flex gap-3 pt-2">
         <Button type="button" variant="outline" onClick={onClose} className="flex-1" disabled={isPending}>Cancelar</Button>
         <Button type="submit" loading={isPending} className="flex-1">{item ? 'Salvar' : 'Criar'}</Button>
@@ -162,7 +163,7 @@ function SortableRow({
 }
 
 // ---------------------------------------------------------------------------
-// Main list
+// Main list — ao reordenar, horários acompanham a posição
 // ---------------------------------------------------------------------------
 
 interface ScheduleListProps {
@@ -176,7 +177,6 @@ export function ScheduleList({ items: initialItems, speakers }: ScheduleListProp
   const [editing, setEditing] = useState<ScheduleItemWithSpeaker | null>(null)
   const [deleting, setDeleting] = useState<ScheduleItemWithSpeaker | null>(null)
   const [isPending, startTransition] = useTransition()
-  const router = useRouter()
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -189,11 +189,25 @@ export function ScheduleList({ items: initialItems, speakers }: ScheduleListProp
 
     const oldIndex = items.findIndex((i) => i.id === active.id)
     const newIndex = items.findIndex((i) => i.id === over.id)
-    const reordered = arrayMove(items, oldIndex, newIndex)
+
+    // Captura horários originais antes do swap
+    const times = items.map((i) => ({
+      start_time: i.start_time,
+      end_time: i.end_time,
+    }))
+
+    // Reordena os items (conteúdo move, horários ficam no slot)
+    const reordered = arrayMove(items, oldIndex, newIndex).map((item, idx) => ({
+      ...item,
+      start_time: times[idx].start_time,
+      end_time: times[idx].end_time,
+      display_order: idx,
+    }))
+
     setItems(reordered)
 
+    // Persiste ordem + horários
     const updates = reordered.map((it, idx) => ({ id: it.id, display_order: idx }))
-    // Ignorar o retorno — startTransition exige void
     startTransition(async () => { await reorderScheduleAction(updates) })
   }
 

@@ -90,11 +90,11 @@ function SpeakerForm({
 
       {/* Foto */}
       <div className="flex flex-col items-center gap-3">
-        <div className="relative h-24 w-24 overflow-hidden rounded-full border-2 border-border bg-muted">
+        <div className="relative h-32 w-32 overflow-hidden rounded-full border-2 border-border bg-muted">
           {previewUrl ? (
-            <Image src={previewUrl} alt={displayName} fill className="object-cover" sizes="96px" />
+            <Image src={previewUrl} alt={displayName} fill className="object-cover" sizes="128px" />
           ) : (
-            <Avatar fallback={getInitials(displayName)} size="lg" className="h-24 w-24" />
+            <Avatar fallback={getInitials(displayName)} size="lg" className="h-32 w-32" />
           )}
         </div>
         <input
@@ -196,17 +196,17 @@ export function SpeakerList({ speakers }: SpeakerListProps) {
             key={speaker.id}
             className="flex items-center gap-4 rounded-lg border border-border bg-card p-4"
           >
-            <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full border border-border">
+            <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-full border border-border">
               {speaker.photo_url ? (
                 <Image
                   src={speaker.photo_url}
                   alt={speaker.name}
                   fill
                   className="object-cover"
-                  sizes="40px"
+                  sizes="64px"
                 />
               ) : (
-                <Avatar fallback={getInitials(speaker.name)} size="sm" />
+                <Avatar fallback={getInitials(speaker.name)} size="lg" className="h-16 w-16" />
               )}
             </div>
             <div className="min-w-0 flex-1">

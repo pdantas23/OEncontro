@@ -52,20 +52,10 @@ export default function AdminDashboardPage() {
     return <AdminLayout><div className="p-8 text-sm text-muted-foreground">Carregando…</div></AdminLayout>
   }
 
-  const roleLabel = user?.role === 'marketing' ? 'Marketing' : 'Comercial'
-
   return (
     <AdminLayout>
       <div className="p-6 lg:p-8 space-y-8">
-        <div>
-          <h1 className="font-display text-2xl font-bold text-foreground">Dashboard</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Bem-vindo, {user?.email}{' '}
-            <span className="rounded-full bg-accent/15 px-2 py-0.5 text-xs font-medium text-accent">
-              {roleLabel}
-            </span>
-          </p>
-        </div>
+        <h1 className="font-display text-2xl font-bold text-foreground">Dashboard</h1>
         {kpis && <KpiCards initial={kpis} />}
         <SalesChart data={salesChart} />
       </div>

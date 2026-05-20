@@ -59,22 +59,22 @@ export function LotList({ lots }: LotListProps) {
         {lots.map((lot) => (
           <div
             key={lot.id}
-            className="flex items-center gap-4 rounded-lg border border-border bg-card p-4"
+            className="flex items-center gap-4 rounded-lg border border-border bg-card p-3"
           >
-            {/* Thumbnail */}
+            {/* Thumbnail grande — representa o ingresso */}
             {lot.image_url ? (
-              <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-md border border-border">
+              <div className="relative h-20 w-32 shrink-0 overflow-hidden rounded-md border border-border">
                 <Image
                   src={lot.image_url}
                   alt={lot.name}
                   fill
                   className="object-cover"
-                  sizes="56px"
+                  sizes="128px"
                 />
               </div>
             ) : (
-              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-md border border-dashed border-border bg-secondary">
-                <ImageIcon className="h-5 w-5 text-muted-foreground" />
+              <div className="flex h-20 w-32 shrink-0 items-center justify-center rounded-md border border-dashed border-border bg-secondary">
+                <ImageIcon className="h-6 w-6 text-muted-foreground" />
               </div>
             )}
 
@@ -101,7 +101,6 @@ export function LotList({ lots }: LotListProps) {
         ))}
       </div>
 
-      {/* Modal criar */}
       <Modal open={creating} onOpenChange={setCreating}>
         <ModalContent>
           <ModalHeader><ModalTitle>Novo lote de ingressos</ModalTitle></ModalHeader>
@@ -111,7 +110,6 @@ export function LotList({ lots }: LotListProps) {
         </ModalContent>
       </Modal>
 
-      {/* Modal editar */}
       <Modal open={!!editing} onOpenChange={(open) => !open && setEditing(null)}>
         <ModalContent>
           <ModalHeader><ModalTitle>Editar lote</ModalTitle></ModalHeader>
@@ -121,7 +119,6 @@ export function LotList({ lots }: LotListProps) {
         </ModalContent>
       </Modal>
 
-      {/* Modal confirmar exclusão */}
       <Modal open={!!deleting} onOpenChange={(open) => !open && setDeleting(null)}>
         <ModalContent size="sm">
           <ModalHeader><ModalTitle>Excluir lote</ModalTitle></ModalHeader>
@@ -130,7 +127,6 @@ export function LotList({ lots }: LotListProps) {
               <p className="text-sm text-muted-foreground">
                 Tem certeza que deseja excluir o lote{' '}
                 <strong className="text-foreground">{deleting?.name}</strong>?
-                Esta ação não pode ser desfeita.
               </p>
               <div className="flex gap-3">
                 <Button variant="outline" onClick={() => setDeleting(null)} className="flex-1">Cancelar</Button>
