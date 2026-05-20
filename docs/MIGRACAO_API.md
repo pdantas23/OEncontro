@@ -23,15 +23,16 @@
 - E-mail best-effort via Resend (comportamento idêntico)
 - Template HTML do e-mail de confirmação
 
-## Limpeza pendente
+## Limpeza pós-validação
 
-- As Edge Functions antigas em `supabase/functions/mp-create-preference/` e
-  `supabase/functions/mp-webhook/` podem ser **removidas** após validação
-  em produção com a nova API
-- O arquivo `supabase/functions/_shared/cors.ts` também pode ser removido
-- Os logs de erro do Edge Runtime no Supabase (referentes a functions
-  ausentes) serão limpos quando as referências do template forem removidas
-  — não bloqueia nada
+1. **FEITO** (2026-05-19) — Removidos diretórios `supabase/functions/mp-create-preference/`,
+   `supabase/functions/mp-webhook/` e `supabase/functions/_shared/cors.ts`
+2. **Pendente** — Logs de erro do Edge Runtime no Supabase (referentes a
+   functions ausentes) podem aparecer nos logs do container. Cosmético,
+   não bloqueia nada. Limpar removendo referências no template do Kong
+   se desejado.
+3. **NÃO remover** — Migrations `20240005_mp_preference_id.sql` e
+   `20240006_fix_rls_obrigado.sql` continuam válidas e necessárias
 
 ## Referências
 
