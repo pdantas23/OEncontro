@@ -12,10 +12,10 @@
 - CORS configurado para todos os endpoints públicos
 - Cache-Control de 5 minutos nos endpoints públicos
 
-### O que NÃO foi feito
+### O que NÃO foi feito (noturna) — resolvido depois
+- ~~Checkout `actions.ts` continua usando Supabase anon key~~ → **MIGRADO** em 2026-05-20 (Task 2)
 - Admin continua usando Supabase direto via `@supabase/ssr` (intencional — não precisa migrar)
-- Checkout `actions.ts` continua usando Supabase anon key para INSERT de orders e RPCs (reserve/release) — migrar para API seria significativo e não estava no escopo
-- Repositórios legado (`src/repositories/*`) mantidos — usados pelo admin e pelo `actions.ts`
+- Repositórios legado (`src/repositories/*`) mantidos — usados pelo admin
 - Não foi criado endpoint `/merchandise` (tabela não existe no schema)
 
 ### Risco de regressão
@@ -92,15 +92,15 @@ curl -I -X OPTIONS https://api.royalhubacademy.com/lots \
 
 ## Itens não resolvidos
 
-1. **`checkout/actions.ts` ainda usa Supabase direto** para INSERT de orders e RPCs — funciona mas depende da anon key no browser. Migrar para API seria mais seguro (service role server-side) mas é mudança significativa.
+1. ~~`checkout/actions.ts` ainda usa Supabase direto~~ → **RESOLVIDO** em 2026-05-20
 2. **Repositórios legado em `src/repositories/`** — usados pelo admin. Podem ser mantidos indefinidamente ou migrados quando o admin for refatorado.
-3. **`NEXT_PUBLIC_MP_SANDBOX`** — variável residual no env.ts, não usada por nenhum código do frontend.
+3. ~~`NEXT_PUBLIC_MP_SANDBOX`~~ → **REMOVIDA** em 2026-05-20
 
 ## Riscos identificados
 
 1. **API cai → home mostra skeletons:** Se `api.royalhubacademy.com` ficar indisponível, as seções dinâmicas (lotes, speakers, programação) mostram loading/skeleton. O restante da home (hero, sobre, FAQ) continua renderizando normalmente.
 2. **CORS mal configurado:** Se `CORS_ALLOWED_ORIGINS` não incluir o domínio correto do frontend, as chamadas falham silenciosamente. Verificar com `curl -X OPTIONS`.
-3. **Cache de 5min nos endpoints:** Um lote criado no admin pode levar até 5 minutos para aparecer no site. Isso é aceitável para o caso de uso mas pode surpreender durante testes.
+3. **Cache de 30s nos endpoints** (reduzido de 5min em 2026-05-20). Subir para 5min quando estável.
 
 ### Como reverter
 ```bash
@@ -108,3 +108,26 @@ git revert <hash-do-commit-api>
 git revert <hash-do-commit-frontend>
 ```
 Cada commit é independente e revertível.
+
+---
+
+## Tasks completadas em 2026-05-20
+
+1. **Cache reduzido para 30s** (`ffb4299`) — endpoints públicos usavam 5min,
+   agora 30s para facilitar testes. Subir para 5min quando estável.
+
+2. **`actions.ts` migrado para API** (`11317e7`) — Novo endpoint
+   `POST /create-order` na API faz reserve + insert server-side com
+   service role. Frontend não faz mais INSERT nem RPC direto no banco.
+   Compensação automática se falhar.
+
+3. **`NEXT_PUBLIC_MP_SANDBOX` removido** (`010f7a2`) — Variável residual
+   no env.ts que não era usada por nenhum código. O sandbox do MP é
+   controlado pela env `MP_SANDBOX` na API. Remover também de `.env.local`
+   manualmente.
+
+4. **Copy atualizado** (`8edf9b6`) — FAQ: duas perguntas (Pix? Cartão?)
+   unificadas em "Quais formas de pagamento?" mencionando Mercado Pago.
+
+5. **Roadmap criado** (`3cb2747`) — `docs/ROADMAP.md` com itens
+   pré-produção e pós-MVP. Ver arquivo para lista completa.
