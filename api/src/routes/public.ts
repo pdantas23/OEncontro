@@ -13,7 +13,7 @@ import { getSupabase } from '../lib/supabase.js'
 
 const app = new Hono()
 
-const CACHE_HEADER = 'public, max-age=300, s-maxage=300'
+const CACHE_HEADER = 'public, max-age=30, s-maxage=30'
 
 // GET /lots — lotes ativos
 app.get('/lots', async (c) => {
