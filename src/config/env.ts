@@ -4,6 +4,11 @@
  * Validação e centralização das variáveis de ambiente via Zod.
  * Falha explicitamente na inicialização se variável obrigatória estiver ausente.
  * Nenhum módulo acessa process.env diretamente — sempre via este arquivo.
+ *
+ * IMPORTANTE: Todas as vars NEXT_PUBLIC_* são lidas como referências literais
+ * (process.env.NEXT_PUBLIC_X) para que o Next.js faça substituição estática
+ * no bundle do cliente. Passar `process.env` como objeto para o Zod não
+ * funciona porque o acesso seria dinâmico (process.env[key]).
  */
 
 import { z } from 'zod'
@@ -44,11 +49,38 @@ const envSchema = z.object({
 })
 
 // ---------------------------------------------------------------------------
+// Leitura literal de cada var — necessário para substituição estática
+// do Next.js no bundle do cliente. NÃO usar process.env como objeto.
+// ---------------------------------------------------------------------------
+
+function getEnvVars() {
+  return {
+    NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
+    NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
+    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
+    PAYMENT_PROVIDER: process.env.PAYMENT_PROVIDER,
+    PAYMENT_SECRET_KEY: process.env.PAYMENT_SECRET_KEY,
+    PAYMENT_WEBHOOK_SECRET: process.env.PAYMENT_WEBHOOK_SECRET,
+    NEXT_PUBLIC_PAYMENT_PUBLIC_KEY: process.env.NEXT_PUBLIC_PAYMENT_PUBLIC_KEY,
+    NEXT_PUBLIC_MP_SANDBOX: process.env.NEXT_PUBLIC_MP_SANDBOX,
+    RESEND_API_KEY: process.env.RESEND_API_KEY,
+    RESEND_FROM_EMAIL: process.env.RESEND_FROM_EMAIL,
+    RESEND_FROM_NAME: process.env.RESEND_FROM_NAME,
+    NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
+    NODE_ENV: process.env.NODE_ENV,
+    NEXT_PUBLIC_GTM_ID: process.env.NEXT_PUBLIC_GTM_ID,
+    NEXT_PUBLIC_META_PIXEL_ID: process.env.NEXT_PUBLIC_META_PIXEL_ID,
+    NEXT_PUBLIC_GOOGLE_ADS_ID: process.env.NEXT_PUBLIC_GOOGLE_ADS_ID,
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Parse + validação na inicialização
 // ---------------------------------------------------------------------------
 
 function parseEnv() {
-  const result = envSchema.safeParse(process.env)
+  const result = envSchema.safeParse(getEnvVars())
 
   if (!result.success) {
     const errors = result.error.issues
