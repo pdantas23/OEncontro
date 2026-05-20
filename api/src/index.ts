@@ -1,6 +1,7 @@
 import { serve } from '@hono/node-server'
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
+import createOrder from './routes/create-order.js'
 import createPreference from './routes/create-preference.js'
 import webhook from './routes/webhook.js'
 import publicRoutes from './routes/public.js'
@@ -31,6 +32,8 @@ const corsMiddleware = cors({
   allowHeaders: ['Content-Type', 'Authorization'],
 })
 
+app.use('/create-order/*', corsMiddleware)
+app.use('/create-order', corsMiddleware)
 app.use('/create-preference/*', corsMiddleware)
 app.use('/lots/*', corsMiddleware)
 app.use('/lots', corsMiddleware)
@@ -49,7 +52,8 @@ app.use('/event-config', corsMiddleware)
 
 app.get('/health', (c) => c.json({ ok: true }))
 
-// Pagamento MP
+// Checkout + Pagamento MP
+app.route('/create-order', createOrder)
 app.route('/create-preference', createPreference)
 app.route('/mp-webhook', webhook)
 
