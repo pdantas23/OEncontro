@@ -24,9 +24,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<AdminSession | null>(null)
   const [loading, setLoading] = useState(true)
 
-  // Atualiza session apenas se os dados realmente mudaram.
-  // Evita re-render em cascata quando onAuthStateChange emite eventos
-  // repetidos (INITIAL_SESSION, TOKEN_REFRESHED) com mesmos dados.
   const updateSession = useCallback((next: AdminSession | null) => {
     setSession((prev) => {
       if (prev === null && next === null) return prev
@@ -37,11 +34,46 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         prev.role === next.role &&
         prev.name === next.name
       ) {
-        return prev // mesma referência → sem re-render
+        return prev
       }
       return next
     })
   }, [])
+
+  // Carrega perfil do banco e atualiza session.
+  // Separado para ser reutilizável sem bloquear o onAuthStateChange.
+  const loadProfile = useCallback(
+    (userId: string, email: string, name: string | undefined) => {
+      const supabase = createClient()
+      // Fire-and-forget — NÃO usar await aqui.
+      // O onAuthStateChange do Supabase faz await de todos os listeners
+      // antes de resolver signInWithPassword. Se este callback for async
+      // e fizer await de uma query, causa deadlock.
+      void (async () => {
+        try {
+          const { data: profile } = await supabase
+            .from('profiles_encontro')
+            .select('role')
+            .eq('uuid', userId)
+            .maybeSingle()
+
+          if (profile && (profile.role === 'comercial' || profile.role === 'marketing')) {
+            updateSession({
+              userId,
+              email,
+              role: profile.role as AdminSession['role'],
+              name,
+            })
+          } else {
+            updateSession(null)
+          }
+        } catch {
+          updateSession(null)
+        }
+      })()
+    },
+    [updateSession],
+  )
 
   useEffect(() => {
     const supabase = createClient()
@@ -52,22 +84,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } = await supabase.auth.getUser()
 
       if (user) {
-        const { data: profile } = await supabase
-          .from('profiles_encontro')
-          .select('role')
-          .eq('uuid', user.id)
-          .maybeSingle()
-
-        if (profile && (profile.role === 'comercial' || profile.role === 'marketing')) {
-          updateSession({
-            userId: user.id,
-            email: user.email ?? '',
-            role: profile.role as AdminSession['role'],
-            name: user.user_metadata?.name as string | undefined,
-          })
-        } else {
-          updateSession(null)
-        }
+        loadProfile(
+          user.id,
+          user.email ?? '',
+          user.user_metadata?.name as string | undefined,
+        )
       } else {
         updateSession(null)
       }
@@ -77,32 +98,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     loadSession()
 
-    // Ouvir mudanças de sessão (login/logout em outras abas)
-    const { data: subscription } = supabase.auth.onAuthStateChange(async (_event, supabaseSession) => {
+    // onAuthStateChange NÃO pode ser async.
+    // signInWithPassword faz await _notifyAllSubscribers() e espera
+    // TODOS os listeners completarem antes de resolver. Se o listener
+    // fizer await de uma query, o signIn trava (deadlock).
+    // Solução: fire-and-forget via loadProfile (usa .then internamente).
+    const { data: subscription } = supabase.auth.onAuthStateChange((_event, supabaseSession) => {
       if (supabaseSession?.user) {
-        const { data: profile } = await supabase
-          .from('profiles_encontro')
-          .select('role')
-          .eq('uuid', supabaseSession.user.id)
-          .maybeSingle()
-
-        if (profile && (profile.role === 'comercial' || profile.role === 'marketing')) {
-          updateSession({
-            userId: supabaseSession.user.id,
-            email: supabaseSession.user.email ?? '',
-            role: profile.role as AdminSession['role'],
-            name: supabaseSession.user.user_metadata?.name as string | undefined,
-          })
-        } else {
-          updateSession(null)
-        }
+        loadProfile(
+          supabaseSession.user.id,
+          supabaseSession.user.email ?? '',
+          supabaseSession.user.user_metadata?.name as string | undefined,
+        )
       } else {
         updateSession(null)
       }
     })
 
     return () => subscription.subscription.unsubscribe()
-  }, [updateSession])
+  }, [updateSession, loadProfile])
 
   async function signOut() {
     const supabase = createClient()

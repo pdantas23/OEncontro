@@ -1,4 +1,5 @@
-// Client-side auth — não usa 'use server'
+// Client-side — projeto usa output: 'export' (static), server actions
+// não funcionam. Toda a lógica roda no browser.
 import { createClient } from '@/lib/supabase/client'
 import type { AdminLoginInput } from '@/lib/validations/auth'
 import type { AuthResult } from '@/types/auth'
