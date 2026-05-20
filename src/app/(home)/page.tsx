@@ -45,12 +45,8 @@ const FAQ_ITEMS = [
     a: 'Sim. Cada ingresso dá acesso a uma pessoa. Para grupos, adquira o número de ingressos correspondente.',
   },
   {
-    q: 'Posso pagar via Pix?',
-    a: 'Sim. O pagamento via Pix é confirmado imediatamente. Após a confirmação, você recebe os detalhes por e-mail.',
-  },
-  {
-    q: 'Posso pagar no cartão de crédito?',
-    a: 'Sim. Aceitamos cartão de crédito. O acesso é liberado após a aprovação da transação.',
+    q: 'Quais formas de pagamento são aceitas?',
+    a: 'Aceitamos Pix, cartão de crédito e boleto — tudo via Mercado Pago, com segurança e praticidade. Você será redirecionado para o ambiente seguro do Mercado Pago na hora do pagamento.',
   },
   {
     q: 'O almoço está incluso?',
