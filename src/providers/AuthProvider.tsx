@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useCallback, useContext, useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import type { AdminSession } from '@/types/auth'
 
@@ -24,6 +24,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<AdminSession | null>(null)
   const [loading, setLoading] = useState(true)
 
+  // Atualiza session apenas se os dados realmente mudaram.
+  // Evita re-render em cascata quando onAuthStateChange emite eventos
+  // repetidos (INITIAL_SESSION, TOKEN_REFRESHED) com mesmos dados.
+  const updateSession = useCallback((next: AdminSession | null) => {
+    setSession((prev) => {
+      if (prev === null && next === null) return prev
+      if (prev === null || next === null) return next
+      if (
+        prev.userId === next.userId &&
+        prev.email === next.email &&
+        prev.role === next.role &&
+        prev.name === next.name
+      ) {
+        return prev // mesma referência → sem re-render
+      }
+      return next
+    })
+  }, [])
+
   useEffect(() => {
     const supabase = createClient()
 
@@ -40,17 +59,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           .maybeSingle()
 
         if (profile && (profile.role === 'comercial' || profile.role === 'marketing')) {
-          setSession({
+          updateSession({
             userId: user.id,
             email: user.email ?? '',
             role: profile.role as AdminSession['role'],
             name: user.user_metadata?.name as string | undefined,
           })
         } else {
-          setSession(null)
+          updateSession(null)
         }
       } else {
-        setSession(null)
+        updateSession(null)
       }
 
       setLoading(false)
@@ -68,22 +87,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           .maybeSingle()
 
         if (profile && (profile.role === 'comercial' || profile.role === 'marketing')) {
-          setSession({
+          updateSession({
             userId: supabaseSession.user.id,
             email: supabaseSession.user.email ?? '',
             role: profile.role as AdminSession['role'],
             name: supabaseSession.user.user_metadata?.name as string | undefined,
           })
         } else {
-          setSession(null)
+          updateSession(null)
         }
       } else {
-        setSession(null)
+        updateSession(null)
       }
     })
 
     return () => subscription.subscription.unsubscribe()
-  }, [])
+  }, [updateSession])
 
   async function signOut() {
     const supabase = createClient()
