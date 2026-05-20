@@ -3,11 +3,12 @@ import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import createPreference from './routes/create-preference.js'
 import webhook from './routes/webhook.js'
+import publicRoutes from './routes/public.js'
 
 const app = new Hono()
 
 // ---------------------------------------------------------------------------
-// CORS — só para rotas chamadas pelo browser (create-preference).
+// CORS — rotas chamadas pelo browser (create-preference + endpoints públicos).
 // O webhook é chamado server-to-server pelo MP, sem CORS.
 // ---------------------------------------------------------------------------
 
@@ -24,14 +25,23 @@ if (allowedOrigins.length === 0) {
   )
 }
 
-app.use(
-  '/create-preference/*',
-  cors({
-    origin: allowedOrigins,
-    allowMethods: ['GET', 'POST', 'OPTIONS'],
-    allowHeaders: ['Content-Type', 'Authorization'],
-  }),
-)
+const corsMiddleware = cors({
+  origin: allowedOrigins,
+  allowMethods: ['GET', 'POST', 'OPTIONS'],
+  allowHeaders: ['Content-Type', 'Authorization'],
+})
+
+app.use('/create-preference/*', corsMiddleware)
+app.use('/lots/*', corsMiddleware)
+app.use('/lots', corsMiddleware)
+app.use('/order-bumps/*', corsMiddleware)
+app.use('/order-bumps', corsMiddleware)
+app.use('/speakers/*', corsMiddleware)
+app.use('/speakers', corsMiddleware)
+app.use('/schedule/*', corsMiddleware)
+app.use('/schedule', corsMiddleware)
+app.use('/event-config/*', corsMiddleware)
+app.use('/event-config', corsMiddleware)
 
 // ---------------------------------------------------------------------------
 // Rotas
@@ -39,8 +49,12 @@ app.use(
 
 app.get('/health', (c) => c.json({ ok: true }))
 
+// Pagamento MP
 app.route('/create-preference', createPreference)
 app.route('/mp-webhook', webhook)
+
+// Dados públicos (leitura)
+app.route('/', publicRoutes)
 
 // ---------------------------------------------------------------------------
 // Servidor
