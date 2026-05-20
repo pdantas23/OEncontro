@@ -123,9 +123,11 @@ app.post('/', async (c) => {
     success: true,
     order_id: order.id,
     total,
+    // lot.price e bump.price já estão em centavos no banco
+    // (o admin multiplica por 100 ao salvar)
     items: [
-      { title: lot.name, quantity, unit_price: lot.price * 100 },
-      ...bumpsData.map((b) => ({ title: b.name, quantity: 1, unit_price: b.price * 100 })),
+      { title: lot.name, quantity, unit_price: lot.price },
+      ...bumpsData.map((b) => ({ title: b.name, quantity: 1, unit_price: b.price })),
     ],
   })
 })
