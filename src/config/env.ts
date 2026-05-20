@@ -30,7 +30,7 @@ const envSchema = z.object({
 
   // Resend
   RESEND_API_KEY: z.string().optional(),
-  RESEND_FROM_EMAIL: z.string().email().default('noreply@royalhubacademy.com.br'),
+  RESEND_FROM_EMAIL: z.string().email().default('noreply@royalhubacademy.com'),
   RESEND_FROM_NAME: z.string().default('Evento'),
 
   // App

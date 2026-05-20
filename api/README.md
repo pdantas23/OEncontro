@@ -55,15 +55,15 @@ SUPABASE_SERVICE_ROLE_KEY=          # service role key
 
 # URLs públicas
 PUBLIC_API_URL=                     # ex: https://api.royalhubacademy.com
-APP_URL=                            # ex: https://royalhubacademy.com.br/encontro
+APP_URL=                            # ex: https://royalhubacademy.com/encontro
 CORS_ALLOWED_ORIGINS=               # OBRIGATÓRIA em produção. Comma-separated.
                                     # Se vazia, NENHUMA origem cross-origin é aceita
                                     # (o frontend não consegue chamar /create-preference).
-                                    # ex: https://royalhubacademy.com.br,https://www.royalhubacademy.com.br
+                                    # ex: https://royalhubacademy.com,https://www.royalhubacademy.com
 
 # Resend (opcional nesta fase)
 RESEND_API_KEY=                     # deixar vazio para desabilitar
-RESEND_FROM_EMAIL=                  # default: noreply@royalhubacademy.com.br
+RESEND_FROM_EMAIL=                  # default: noreply@royalhubacademy.com
 RESEND_FROM_NAME=                   # default: O Encontro 2026
 
 # Servidor

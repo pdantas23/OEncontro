@@ -211,4 +211,4 @@ const preference = {
 
 - **`checkout/actions.ts` roda no CLIENTE (browser):** O código usa `createClient` (anon key) e `window.location.href`. Isso significa que todas as validações de preço e cálculos de total são feitas no cliente. Embora os preços venham do banco (não do input do usuário), um atacante sofisticado poderia manipular o DOM/JS para alterar o total enviado à Edge Function. A Edge Function `mp-create-preference` usa o total recebido do cliente sem revalidar contra o banco. **Recomendação:** recalcular o total dentro da Edge Function usando os dados do banco.
 
-- **CORS `Access-Control-Allow-Origin: *`:** A Edge Function `mp-create-preference` usa `Access-Control-Allow-Origin: *`. Para produção, considerar restringir ao domínio real (`royalhubacademy.com.br`).
+- **CORS `Access-Control-Allow-Origin: *`:** A Edge Function `mp-create-preference` usa `Access-Control-Allow-Origin: *`. Para produção, considerar restringir ao domínio real (`royalhubacademy.com`).
