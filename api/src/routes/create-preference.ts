@@ -32,7 +32,10 @@ app.post('/', async (c) => {
     return c.json({ error: 'Configuração do servidor incompleta' }, 500)
   }
 
-  const appUrl = process.env.APP_URL ?? 'http://localhost:3000'
+  const appUrl = process.env.APP_URL || 'https://royalhubacademy.com/encontro'
+  if (!process.env.APP_URL) {
+    console.warn('[create-preference] APP_URL não definida, usando fallback: %s', appUrl)
+  }
   const isSandbox = process.env.MP_SANDBOX === 'true'
 
   const preference: MpPreferenceInput = {
