@@ -18,7 +18,7 @@ export async function createLotAction(formData: unknown) {
   const supabase = createClient()
   const { data, error } = await supabase
     .from('ticket_lots_encontro')
-    .insert({ ...parsed.data, price: Math.round(parsed.data.price * 100), sold_count: 0 })
+    .insert({ ...parsed.data, sold_count: 0 })
     .select()
     .single()
 
@@ -33,7 +33,7 @@ export async function updateLotAction(id: string, formData: unknown) {
   const supabase = createClient()
   const { error } = await supabase
     .from('ticket_lots_encontro')
-    .update({ ...parsed.data, price: Math.round(parsed.data.price * 100) })
+    .update({ ...parsed.data })
     .eq('id', id)
 
   if (error) return { success: false as const, error: 'Erro ao atualizar lote' }

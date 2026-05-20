@@ -42,7 +42,7 @@ app.post('/', async (c) => {
     items: items.map((item) => ({
       title: item.title,
       quantity: item.quantity,
-      unit_price: item.unit_price / 100, // MP espera em reais (decimal)
+      unit_price: item.unit_price, // já em reais (banco usa numeric(10,2))
       currency_id: 'BRL',
     })),
     payer: {
