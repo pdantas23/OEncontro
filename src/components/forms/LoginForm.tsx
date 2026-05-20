@@ -38,8 +38,10 @@ export function LoginForm() {
       return
     }
 
+    // NÃO usar router.refresh() — projeto é static export
+    // (next.config.ts: output 'export'), e refresh() depende de
+    // servidor que não existe nesse modo.
     router.push(redirectTo)
-    router.refresh()
   }
 
   return (
