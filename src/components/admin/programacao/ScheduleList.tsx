@@ -44,14 +44,46 @@ import type { Speaker } from '@/repositories/SpeakerRepository'
 // Form — sem campo Ordem (gerenciado automaticamente pelo drag)
 // ---------------------------------------------------------------------------
 
+function timeToMinutes(t: string): number {
+  const [h, m] = t.split(':').map(Number)
+  return h * 60 + m
+}
+
+function checkOverlap(
+  day: number,
+  startTime: string,
+  endTime: string | null,
+  allItems: ScheduleItemWithSpeaker[],
+  excludeId?: string,
+): string | null {
+  const newStart = timeToMinutes(startTime)
+  const newEnd = endTime ? timeToMinutes(endTime) : newStart + 30 // default 30min se sem fim
+
+  for (const existing of allItems) {
+    if (existing.id === excludeId) continue
+    if (existing.day !== day) continue
+
+    const exStart = timeToMinutes(existing.start_time)
+    const exEnd = existing.end_time ? timeToMinutes(existing.end_time) : exStart + 30
+
+    if (newStart < exEnd && newEnd > exStart) {
+      const speaker = existing.speaker?.name ?? existing.talk_title
+      return `Conflito de horário com "${speaker}" (${existing.start_time}${existing.end_time ? '–' + existing.end_time : ''}). Ajuste o horário para evitar sobreposição.`
+    }
+  }
+  return null
+}
+
 function ScheduleForm({
   item,
   speakers,
+  allItems,
   nextOrder,
   onClose,
 }: {
   item?: ScheduleItemWithSpeaker
   speakers: Speaker[]
+  allItems: ScheduleItemWithSpeaker[]
   nextOrder?: number
   onClose: () => void
 }) {
@@ -62,8 +94,21 @@ function ScheduleForm({
     e.preventDefault()
     setError(null)
     const fd = new FormData(e.currentTarget)
+    const raw = Object.fromEntries(fd)
+
+    // Validar sobreposição de horários
+    const day = Number(raw.day)
+    const startTime = raw.start_time as string
+    const endTime = (raw.end_time as string) || null
+
+    const overlap = checkOverlap(day, startTime, endTime, allItems, item?.id)
+    if (overlap) {
+      setError(overlap)
+      return
+    }
+
     const data = {
-      ...Object.fromEntries(fd),
+      ...raw,
       display_order: item?.display_order ?? nextOrder ?? 0,
     }
     startTransition(async () => {
@@ -246,14 +291,14 @@ export function ScheduleList({ items: initialItems, speakers }: ScheduleListProp
       <Modal open={creating} onOpenChange={setCreating}>
         <ModalContent>
           <ModalHeader><ModalTitle>Novo item de programação</ModalTitle></ModalHeader>
-          <ModalBody><ScheduleForm speakers={speakers} nextOrder={items.length} onClose={() => setCreating(false)} /></ModalBody>
+          <ModalBody><ScheduleForm speakers={speakers} allItems={items} nextOrder={items.length} onClose={() => setCreating(false)} /></ModalBody>
         </ModalContent>
       </Modal>
 
       <Modal open={!!editing} onOpenChange={(o) => !o && setEditing(null)}>
         <ModalContent>
           <ModalHeader><ModalTitle>Editar item</ModalTitle></ModalHeader>
-          <ModalBody>{editing && <ScheduleForm item={editing} speakers={speakers} onClose={() => setEditing(null)} />}</ModalBody>
+          <ModalBody>{editing && <ScheduleForm item={editing} speakers={speakers} allItems={items} onClose={() => setEditing(null)} />}</ModalBody>
         </ModalContent>
       </Modal>
 

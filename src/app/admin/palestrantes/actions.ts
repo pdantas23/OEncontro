@@ -50,6 +50,16 @@ export async function deleteSpeakerAction(id: string) {
   return { success: true as const }
 }
 
+export async function reorderSpeakersAction(items: Array<{ id: string; display_order: number }>) {
+  const supabase = createClient()
+  await Promise.all(
+    items.map(({ id, display_order }) =>
+      supabase.from('speakers_encontro').update({ display_order }).eq('id', id),
+    ),
+  )
+  return { success: true as const }
+}
+
 export async function uploadSpeakerPhotoAction(
   speakerId: string,
   formData: FormData,
