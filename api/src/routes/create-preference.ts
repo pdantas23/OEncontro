@@ -61,6 +61,11 @@ app.post('/', async (c) => {
     statement_descriptor: 'ENCONTRO',
   }
 
+  // TODO: remover logs temporários após validação
+  console.log('[create-preference] payload completo:', JSON.stringify(preference, null, 2))
+  console.log('[create-preference] APP_URL env:', process.env.APP_URL)
+  console.log('[create-preference] appUrl computado:', appUrl)
+
   try {
     const mpData = await createPreference(preference)
 
