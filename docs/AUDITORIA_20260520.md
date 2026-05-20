@@ -159,3 +159,67 @@ Item #2 do `RELATORIO_SEGURANCA_MP.md` — o webhook aceita qualquer POST. A mit
 9. **Expiração de preferences** — Item #5 do ROADMAP. Importante mas pode esperar até ter tráfego real.
 
 10. **Migrar admin auth para API** — remove anon key do bundle. Melhoria de segurança mas o risco atual é baixo (RLS protege).
+
+---
+
+## FECHAMENTO 2026-05-20 MANHÃ
+
+### Commits aplicados
+
+| Hash | Descrição |
+|------|-----------|
+| `140afc6` | fix(checkout): substitui router.replace por window.location |
+| `005f560` | fix(obrigado): substitui router.replace por window.location |
+| `ea608f6` | fix(admin): substitui router.replace por window.location |
+
+### Status dos 9 router.push/replace (seção 2.1)
+
+| Arquivo | Linha(s) | Status |
+|---------|----------|--------|
+| `src/app/checkout/page.tsx` | 22, 26, 38, 47 | **Corrigido** → `window.location.replace` |
+| `src/app/obrigado/page.tsx` | 19, 33 | **Corrigido** → `window.location.replace` |
+| `src/hooks/useAdminAuth.ts` | 25, 36 | **Corrigido** → `window.location.replace` |
+| `src/app/admin/login/page.tsx` | 9 | **Corrigido** → `window.location.replace` |
+| `src/components/checkout/steps/Step4Card.tsx` | 59 | **Corrigido** (código morto, mas consistência) |
+
+Grep `router.push` e `router.replace` no projeto: **zero hits restantes.**
+
+### npm run dev
+
+**Funciona sem erros.** Next.js 16.2.6 (Turbopack), porta 3000, carrega `.env.local`, ready em 342ms. Nenhuma correção de código necessária — o problema reportado era transitório.
+
+### O que falta no Bloco 1
+
+Apenas deploy manual:
+1. Build do frontend estático
+2. Upload do `out/` para Hostinger
+3. Teste end-to-end do checkout com MP sandbox
+
+### Instruções para Philip fechar o Bloco 1
+
+```bash
+# 1. Puxar os commits mais recentes
+cd "/Users/philip/Desktop/RoyalHub/Landing Pages/Encontro"
+git pull origin main
+
+# 2. Build de produção (renomear .env.local pra não sobrescrever)
+mv .env.local .env.local.bak
+npm run build
+mv .env.local.bak .env.local
+
+# 3. O output está em out/ — subir para Hostinger
+#    (substituir todo o conteúdo de public_html/encontro/)
+
+# 4. Verificar:
+#    - https://royalhubacademy.com/encontro → home carrega
+#    - Lotes aparecem (via API, não estáticos)
+#    - Login admin funciona (botão não trava mais)
+#    - Checkout: clicar "Garantir minha participação" → redireciona pro MP
+
+# 5. Teste end-to-end do checkout:
+#    - No admin, ajustar preço de um lote para R$ 1,00 (teste)
+#    - Na home, clicar no lote → checkout → "Pagar com Mercado Pago"
+#    - No MP sandbox, pagar com usuário de teste
+#    - Verificar: /obrigado mostra "Pagamento confirmado"
+#    - Verificar: pedido aparece no admin com status "paid"
+```
