@@ -1,13 +1,14 @@
 'use client'
 
 import { Suspense, useEffect, useState } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { ObrigadoContent } from '@/components/obrigado/ObrigadoContent'
 import type { OrderSummary } from '@/types/checkout'
 
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? ''
+
 function ObrigadoInner() {
-  const router = useRouter()
   const searchParams = useSearchParams()
   const orderId = searchParams.get('order_id')
 
@@ -15,22 +16,22 @@ function ObrigadoInner() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    // static export: window.location em vez de router.replace
+    // (route data files não confiáveis no Hostinger)
     if (!orderId) {
-      router.replace('/')
+      window.location.replace(`${basePath}/`)
       return
     }
 
     async function load() {
       const supabase = createClient()
 
-      // Usa RPC get_order_status — SECURITY DEFINER, retorna apenas
-      // colunas necessárias sem expor dados sensíveis da tabela.
       const { data } = await supabase
         .rpc('get_order_status', { p_order_id: orderId! })
         .maybeSingle()
 
       if (!data) {
-        router.replace('/')
+        window.location.replace(`${basePath}/`)
         return
       }
 
@@ -38,7 +39,7 @@ function ObrigadoInner() {
       setLoading(false)
     }
     load()
-  }, [orderId, router])
+  }, [orderId])
 
   if (loading) {
     return (
