@@ -14,6 +14,7 @@ export interface MpPreferenceInput {
   external_reference: string
   notification_url: string
   statement_descriptor: string
+  expiration_date_to?: string
 }
 
 export interface MpPreferenceResult {

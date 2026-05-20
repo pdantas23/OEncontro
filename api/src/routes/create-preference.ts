@@ -59,6 +59,9 @@ app.post('/', async (c) => {
     external_reference: order_id,
     notification_url: `${publicApiUrl}/mp-webhook`,
     statement_descriptor: 'ENCONTRO',
+    // Preference expira em 30 minutos — pedidos abandonados não ficam
+    // pendentes indefinidamente no MP
+    expiration_date_to: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
   }
 
   // TODO: remover logs temporários após validação

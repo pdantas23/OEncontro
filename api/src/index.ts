@@ -64,7 +64,12 @@ app.route('/', publicRoutes)
 // Servidor
 // ---------------------------------------------------------------------------
 
+import { startCleanupScheduler } from './lib/cleanup.js'
+
 const port = Number(process.env.PORT) || 3000
 
 console.log(`[api] Iniciando na porta ${port}`)
 serve({ fetch: app.fetch, port })
+
+// Expira pedidos pending > 30min a cada 15 minutos
+startCleanupScheduler()
