@@ -10,7 +10,7 @@
  * Dados estáticos (FAQ, Sobre, Memórias, Depoimentos) ficam no Server Component.
  */
 
-import { Calendar, MapPin, Star } from 'lucide-react'
+import { Calendar, MapPin, Star, Users } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 
@@ -246,7 +246,7 @@ export function IngressosSection() {
   }
 
   return (
-    <div className="flex flex-wrap justify-center gap-6">
+    <div className="flex flex-wrap justify-center gap-8">
       {lots.map((lot) => {
         const available = lot.total_limit - lot.sold_count
         const isLotSoldOut = lot.status === 'soldout' || available <= 0
@@ -254,68 +254,106 @@ export function IngressosSection() {
         const benefits = Array.isArray(lot.benefits) ? lot.benefits as string[] : []
         const imageUrl = lot.image_url
 
+        // Separar R$ do valor para tratamento tipográfico
+        const priceStr = formatCurrency(lot.price)
+        const priceParts = priceStr.match(/^(R\$\s?)(.+)$/)
+
         return (
           <article
             key={lot.id}
             className={cn(
-              'relative flex w-full max-w-sm flex-col gap-4 overflow-hidden rounded-lg border transition-colors duration-300',
+              'relative flex w-full max-w-md flex-col overflow-hidden rounded-2xl border-2 shadow-lg transition-all duration-300',
               isLotSoldOut
-                ? 'border-border bg-secondary opacity-60'
-                : 'border-accent/30 bg-background hover:border-accent/60',
+                ? 'border-border bg-secondary/80 opacity-70 shadow-none'
+                : 'border-accent/20 bg-gradient-to-b from-background to-secondary/30 hover:shadow-xl hover:border-accent/40',
             )}
             aria-label={`Lote ${lot.name}${isLotSoldOut ? ' — esgotado' : ''}`}
           >
+            {/* Badge de urgência / esgotado */}
             {isLowStock && !isLotSoldOut && (
-              <Badge variant="warning" className="absolute top-3 left-4 z-10">
+              <Badge variant="warning" className="absolute top-4 left-4 z-10 shadow-sm">
                 Últimas {available} vagas
               </Badge>
             )}
             {isLotSoldOut && (
-              <Badge variant="secondary" className="absolute top-3 left-4 z-10">
+              <Badge variant="secondary" className="absolute top-4 left-4 z-10">
                 Esgotado
               </Badge>
             )}
 
-            {/* Imagem do ingresso */}
-            {imageUrl && (
-              <div className="relative aspect-[16/9] w-full overflow-hidden">
+            {/* Imagem do ingresso — banner no topo */}
+            {imageUrl ? (
+              <div className="relative aspect-[2/1] w-full overflow-hidden">
                 <Image
                   src={imageUrl}
                   alt={lot.name}
                   fill
                   className="object-cover"
-                  sizes="(max-width: 640px) 100vw, 384px"
+                  sizes="(max-width: 640px) 100vw, 448px"
                 />
+                {/* Gradiente suave na base da imagem */}
+                <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-background/60 to-transparent" />
+              </div>
+            ) : (
+              <div className="flex aspect-[2/1] w-full items-center justify-center bg-muted/40">
+                <div className="flex flex-col items-center gap-2 text-muted-foreground/40">
+                  <Star className="h-10 w-10" />
+                  <span className="font-detail text-xs">Imagem do ingresso</span>
+                </div>
               </div>
             )}
 
-            <div className="flex flex-1 flex-col gap-4 p-6 pt-3">
-              <div>
-                <h3 className="font-display text-lg font-semibold text-foreground">{lot.name}</h3>
+            {/* Conteúdo */}
+            <div className="flex flex-1 flex-col gap-5 p-7 sm:p-8">
+              {/* Título — serifado, grande */}
+              <div className="text-center">
+                <h3 className="font-display text-2xl font-bold text-foreground sm:text-3xl">
+                  {lot.name}
+                </h3>
                 {lot.description && (
-                  <p className="font-detail mt-1 text-xs text-muted-foreground">{lot.description}</p>
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                    {lot.description}
+                  </p>
                 )}
               </div>
-              <p className="font-display text-3xl font-semibold text-accent">
-                {formatCurrency(lot.price)}
-              </p>
+
+              {/* Preço — vermelho da marca, destaque máximo */}
+              <div className="text-center">
+                <p className="font-display font-bold text-primary">
+                  {priceParts ? (
+                    <>
+                      <span className="text-lg">{priceParts[1]}</span>
+                      <span className="text-4xl sm:text-5xl">{priceParts[2]}</span>
+                    </>
+                  ) : (
+                    <span className="text-4xl sm:text-5xl">{priceStr}</span>
+                  )}
+                </p>
+              </div>
+
+              {/* Benefícios */}
               {benefits.length > 0 && (
-                <ul className="flex flex-col gap-1.5">
+                <ul className="flex flex-col gap-2 px-2">
                   {benefits.map((b, i) => (
-                    <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
-                      <Star className="mt-0.5 h-3.5 w-3.5 shrink-0 text-accent" aria-hidden="true" />
+                    <li key={i} className="flex items-start gap-2.5 text-sm text-muted-foreground">
+                      <Star className="mt-0.5 h-4 w-4 shrink-0 text-accent" aria-hidden="true" />
                       {b}
                     </li>
                   ))}
                 </ul>
               )}
+
+              {/* Vagas disponíveis */}
               {!isLotSoldOut && (
-                <p className="font-detail text-xs text-muted-foreground">
+                <p className="flex items-center justify-center gap-1.5 font-detail text-xs text-muted-foreground">
+                  <Users className="h-3.5 w-3.5" aria-hidden="true" />
                   {available} {available === 1 ? 'vaga disponível' : 'vagas disponíveis'}
                 </p>
               )}
+
+              {/* CTA */}
               <Button
-                className="mt-auto w-full"
+                className="mt-auto w-full py-3 text-base font-semibold transition-all hover:shadow-md"
                 disabled={isLotSoldOut || !isSaleOpen}
                 asChild
               >
