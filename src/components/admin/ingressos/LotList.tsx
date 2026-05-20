@@ -1,8 +1,8 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { useRouter } from 'next/navigation'
-import { Pencil, Trash2, Plus } from 'lucide-react'
+import Image from 'next/image'
+import { Pencil, Trash2, Plus, ImageIcon } from 'lucide-react'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Modal, ModalContent, ModalHeader, ModalTitle, ModalBody } from '@/components/ui/Modal'
@@ -32,7 +32,6 @@ export function LotList({ lots }: LotListProps) {
   const [editing, setEditing] = useState<TicketLot | null>(null)
   const [deleting, setDeleting] = useState<TicketLot | null>(null)
   const [isPending, startTransition] = useTransition()
-  const router = useRouter()
 
   function handleDelete() {
     if (!deleting) return
@@ -62,6 +61,23 @@ export function LotList({ lots }: LotListProps) {
             key={lot.id}
             className="flex items-center gap-4 rounded-lg border border-border bg-card p-4"
           >
+            {/* Thumbnail */}
+            {lot.image_url ? (
+              <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-md border border-border">
+                <Image
+                  src={lot.image_url}
+                  alt={lot.name}
+                  fill
+                  className="object-cover"
+                  sizes="56px"
+                />
+              </div>
+            ) : (
+              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-md border border-dashed border-border bg-secondary">
+                <ImageIcon className="h-5 w-5 text-muted-foreground" />
+              </div>
+            )}
+
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
                 <p className="font-medium text-foreground">{lot.name}</p>
@@ -70,7 +86,7 @@ export function LotList({ lots }: LotListProps) {
                 </Badge>
               </div>
               <p className="mt-0.5 text-sm text-muted-foreground">
-                {formatCurrency(lot.price)} · {lot.sold_count}/{lot.total_limit} vendidos
+                {formatCurrency(lot.price)} · {lot.sold_count} vendidos
               </p>
             </div>
             <div className="flex shrink-0 gap-2">

@@ -6,7 +6,7 @@ const lotSchema = z.object({
   name: z.string().min(1, 'Nome obrigatório').max(120),
   description: z.string().optional().nullable(),
   price: z.coerce.number().min(0, 'Preço inválido'),
-  total_limit: z.coerce.number().int().min(1, 'Limite mínimo: 1'),
+  total_limit: z.coerce.number().int().min(1).default(99999),
   status: z.enum(['active', 'inactive', 'sold_out']),
   display_order: z.coerce.number().int().min(0).default(0),
 })
