@@ -1,9 +1,10 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import type { AdminRole } from '@/types/auth'
+
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? ''
 
 export interface AdminUser {
   userId: string
@@ -12,7 +13,6 @@ export interface AdminUser {
 }
 
 export function useAdminAuth() {
-  const router = useRouter()
   const [user, setUser] = useState<AdminUser | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -22,7 +22,8 @@ export function useAdminAuth() {
       const { data: { user: authUser } } = await supabase.auth.getUser()
 
       if (!authUser) {
-        router.replace('/login')
+        // static export: window.location em vez de router.replace
+        window.location.replace(`${basePath}/login`)
         return
       }
 
@@ -33,7 +34,7 @@ export function useAdminAuth() {
         .maybeSingle()
 
       if (!profile || (profile.role !== 'comercial' && profile.role !== 'marketing')) {
-        router.replace('/login')
+        window.location.replace(`${basePath}/login`)
         return
       }
 
@@ -46,7 +47,7 @@ export function useAdminAuth() {
     }
 
     checkAuth()
-  }, [router])
+  }, [])
 
   return { user, loading }
 }

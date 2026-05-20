@@ -6,7 +6,7 @@
  */
 
 import { useState, useTransition } from 'react'
-import { useRouter } from 'next/navigation'
+// static export: window.location em vez de router.push
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { cardSchema, type CardValues } from '@/lib/validations/checkout'
@@ -24,7 +24,6 @@ interface Step4CardProps {
 export function Step4Card({ state, onBack }: Step4CardProps) {
   const [isPending, startTransition] = useTransition()
   const [serverError, setServerError] = useState<string | null>(null)
-  const router = useRouter()
 
   const {
     register,
@@ -56,7 +55,8 @@ export function Step4Card({ state, onBack }: Step4CardProps) {
       }
 
       // Cartão aprovado — redirecionar para /obrigado
-      router.push(`/obrigado?order_id=${result.orderId}`)
+      const bp = process.env.NEXT_PUBLIC_BASE_PATH ?? ''
+      window.location.href = `${bp}/obrigado?order_id=${result.orderId}`
     })
   }
 

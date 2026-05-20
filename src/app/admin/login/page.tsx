@@ -1,12 +1,13 @@
 'use client'
 
 import { useEffect } from 'react'
-import { useRouter } from 'next/navigation'
 
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? ''
+
+// static export: window.location em vez de router.replace
 export default function AdminLoginRedirect() {
-  const router = useRouter()
   useEffect(() => {
-    router.replace('/login')
-  }, [router])
+    window.location.replace(`${basePath}/login`)
+  }, [])
   return null
 }
