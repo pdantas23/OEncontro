@@ -47,10 +47,14 @@ export interface MpPayment {
   external_reference: string
 }
 
-export async function getPayment(paymentId: string): Promise<MpPayment> {
+export async function getPayment(paymentId: string): Promise<MpPayment | null> {
   const res = await fetch(`${MP_API}/v1/payments/${paymentId}`, {
     headers: { Authorization: `Bearer ${getToken()}` },
   })
+
+  if (res.status === 404) {
+    return null
+  }
 
   if (!res.ok) {
     console.error('[mercadopago] Erro ao consultar payment:', res.status)

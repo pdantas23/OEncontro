@@ -44,9 +44,14 @@ app.post('/', async (c) => {
     let payment
     try {
       payment = await getPayment(paymentId)
-    } catch {
-      console.error('[webhook] Falha ao consultar payment:', paymentId)
-      return c.text('MP API error', 502)
+    } catch (err) {
+      console.error('[webhook] Falha ao consultar payment:', paymentId, err)
+      return c.text('OK', 200)
+    }
+
+    if (!payment) {
+      console.warn('[webhook] Payment não encontrado no MP (id: %s)', paymentId)
+      return c.text('OK', 200)
     }
 
     const orderId = payment.external_reference
