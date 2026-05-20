@@ -91,20 +91,20 @@ app.post('/', async (c) => {
       })
       .eq('id', orderId)
 
-    // Se aprovado → e-mail best-effort (não bloqueia o update acima)
+    // Se aprovado → incrementa sold_count + e-mail best-effort
     if (internalStatus === 'paid') {
-      await sendApprovalEmail(order)
-    }
-
-    // Se falhou → libera vaga
-    if (internalStatus === 'failed' || internalStatus === 'canceled') {
-      const { error: releaseError } = await supabase.rpc('release_ticket_slot', {
+      // sold_count só é incrementado aqui (no pagamento aprovado),
+      // NÃO na criação do pedido. Isso garante que o admin só vê
+      // ingressos como vendidos após pagamento real.
+      const { error: slotError } = await supabase.rpc('reserve_ticket_slot', {
         p_lot_id: order.ticket_lot_id,
         p_quantity: order.ticket_quantity,
       })
-      if (releaseError) {
-        console.error('[webhook] Erro ao liberar vaga:', releaseError.message)
+      if (slotError) {
+        console.error('[webhook] Erro ao incrementar sold_count:', slotError.message)
       }
+
+      await sendApprovalEmail(order)
     }
 
     return c.text('OK', 200)

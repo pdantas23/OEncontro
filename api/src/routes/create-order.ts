@@ -3,14 +3,15 @@
  *
  * POST /create-order
  *
- * Cria um pedido completo server-side:
- *   1. Valida lote (ativo, preço real do DB)
- *   2. Reserva vagas via RPC reserve_ticket_slot (FOR UPDATE lock)
- *   3. Calcula total com preços do DB (nunca confia no client)
- *   4. Insere o pedido em orders_encontro
- *   5. Retorna { order_id } pro frontend chamar /create-preference
+ * Cria um pedido server-side:
+ *   1. Valida lote (ativo, preço real do DB, vagas disponíveis)
+ *   2. Calcula total com preços do DB (nunca confia no client)
+ *   3. Insere o pedido em orders_encontro com status 'pending'
+ *   4. Retorna { order_id } pro frontend chamar /create-preference
  *
- * Se qualquer passo falhar, compensa (release_ticket_slot).
+ * sold_count NÃO é incrementado aqui — só no webhook quando o
+ * pagamento é confirmado (status = 'paid'). Isso evita mostrar
+ * ingressos como vendidos antes do pagamento.
  */
 
 import { Hono } from 'hono'
@@ -61,17 +62,7 @@ app.post('/', async (c) => {
     return c.json({ success: false, error: 'Ingressos esgotados para este lote.' }, 400)
   }
 
-  // 2. Reserva vagas atomicamente (FOR UPDATE lock no Postgres)
-  const { data: reserved, error: reserveError } = await supabase.rpc('reserve_ticket_slot', {
-    p_lot_id: lot_id,
-    p_quantity: quantity,
-  })
-
-  if (reserveError || !reserved) {
-    return c.json({ success: false, error: 'Ingressos esgotados para este lote.' }, 400)
-  }
-
-  // 3. Calcula total com preços do DB
+  // 2. Calcula total com preços do DB
   let bumpsData: Array<{ id: string; name: string; price: number }> = []
   if (bumps.length > 0) {
     const { data } = await supabase
@@ -86,7 +77,7 @@ app.post('/', async (c) => {
   const bumpsTotal = bumpsData.reduce((s, b) => s + b.price, 0)
   const total = subtotal + bumpsTotal
 
-  // 4. Insere pedido (service role bypassa RLS)
+  // 3. Insere pedido (service role bypassa RLS)
   const { data: order, error: orderError } = await supabase
     .from('orders_encontro')
     .insert({
@@ -114,8 +105,6 @@ app.post('/', async (c) => {
 
   if (orderError || !order) {
     console.error('[create-order] INSERT error:', orderError?.message)
-    // Compensa reserva
-    await supabase.rpc('release_ticket_slot', { p_lot_id: lot_id, p_quantity: quantity })
     return c.json({ success: false, error: 'Erro ao criar pedido. Tente novamente.' }, 500)
   }
 
@@ -123,8 +112,6 @@ app.post('/', async (c) => {
     success: true,
     order_id: order.id,
     total,
-    // lot.price e bump.price já estão em centavos no banco
-    // (o admin multiplica por 100 ao salvar)
     items: [
       { title: lot.name, quantity, unit_price: lot.price },
       ...bumpsData.map((b) => ({ title: b.name, quantity: 1, unit_price: b.price })),
