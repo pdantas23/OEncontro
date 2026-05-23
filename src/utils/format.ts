@@ -49,3 +49,13 @@ export function getInitials(name: string): string {
     .map((n) => n[0].toUpperCase())
     .join('')
 }
+
+/** Formata dias do evento em pt-BR. Deduplica + ordena ASC. Ex: [17] → "Dia 17", [18,19] → "Dias 18 e 19" */
+export function formatEventDaysLabel(days: number[] | null | undefined): string {
+  if (!days || days.length === 0) return ''
+  const unique = [...new Set(days)].sort((a, b) => a - b)
+  if (unique.length === 1) return `Dia ${unique[0]}`
+  const last = unique[unique.length - 1]
+  const rest = unique.slice(0, -1)
+  return `Dias ${rest.join(', ')} e ${last}`
+}
