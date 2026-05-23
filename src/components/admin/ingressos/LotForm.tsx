@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/Textarea'
 import { Button } from '@/components/ui/Button'
 import { Alert } from '@/components/ui/Alert'
 import { createLotAction, updateLotAction, uploadLotImageAction } from '@/app/admin/ingressos/actions'
+import { EventDaysInput } from './EventDaysInput'
 import type { TicketLot } from '@/repositories/TicketLotRepository'
 
 interface LotFormProps {
@@ -20,24 +21,31 @@ export function LotForm({ lot, nextOrder = 0, onClose }: LotFormProps) {
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
   const [imageUrl, setImageUrl] = useState<string | null>(lot?.image_url ?? null)
+  const [pendingFile, setPendingFile] = useState<File | null>(null)
   const [uploading, setUploading] = useState(false)
   const [isActive, setIsActive] = useState(lot?.status === 'active' || !lot)
+  const [eventDays, setEventDays] = useState<number[]>(lot?.event_days ?? [])
   const fileRef = useRef<HTMLInputElement>(null)
   const isEditing = !!lot
 
-  async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
-    if (!isEditing || !lot) {
-      setError('Salve o lote primeiro e depois adicione a imagem.')
-      return
+
+    if (isEditing && lot) {
+      // Upload imediato quando já existe o lote
+      setUploading(true)
+      setError(null)
+      uploadLotImageAction(lot.id, file).then((result) => {
+        setUploading(false)
+        if (!result.success) { setError(result.error); return }
+        setImageUrl(result.url)
+      })
+    } else {
+      // Guardar arquivo para upload após criação
+      setPendingFile(file)
+      setImageUrl(URL.createObjectURL(file))
     }
-    setUploading(true)
-    setError(null)
-    const result = await uploadLotImageAction(lot.id, file)
-    setUploading(false)
-    if (!result.success) { setError(result.error); return }
-    setImageUrl(result.url)
   }
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -48,12 +56,21 @@ export function LotForm({ lot, nextOrder = 0, onClose }: LotFormProps) {
       ...Object.fromEntries(fd),
       status: isActive ? 'active' : 'inactive',
       display_order: lot?.display_order ?? nextOrder,
+      event_days: eventDays.length > 0 ? eventDays : null,
     }
     startTransition(async () => {
-      const result = isEditing
-        ? await updateLotAction(lot.id, data)
-        : await createLotAction(data)
-      if (!result.success) { setError(result.error ?? 'Erro desconhecido'); return }
+      if (isEditing) {
+        const result = await updateLotAction(lot.id, data)
+        if (!result.success) { setError(result.error ?? 'Erro desconhecido'); return }
+      } else {
+        const result = await createLotAction(data)
+        if (!result.success) { setError(result.error ?? 'Erro desconhecido'); return }
+        // Upload da imagem pendente com o id recém-criado
+        if (pendingFile && result.id) {
+          const uploadResult = await uploadLotImageAction(result.id, pendingFile)
+          if (!uploadResult.success) { setError(uploadResult.error); return }
+        }
+      }
       window.location.reload()
       onClose()
     })
@@ -80,16 +97,11 @@ export function LotForm({ lot, nextOrder = 0, onClose }: LotFormProps) {
           <button
             type="button"
             onClick={() => fileRef.current?.click()}
-            disabled={!isEditing || uploading}
+            disabled={uploading}
             className="flex aspect-[16/9] w-full items-center justify-center gap-2 rounded-lg border-2 border-dashed border-border bg-secondary/50 text-sm text-muted-foreground transition-colors hover:border-accent/40 hover:bg-secondary disabled:opacity-50"
           >
             {uploading ? (
               <span>Enviando...</span>
-            ) : !isEditing ? (
-              <>
-                <ImageIcon className="h-6 w-6" />
-                <span>Salve primeiro para adicionar imagem</span>
-              </>
             ) : (
               <>
                 <Upload className="h-6 w-6" />
@@ -98,7 +110,7 @@ export function LotForm({ lot, nextOrder = 0, onClose }: LotFormProps) {
             )}
           </button>
         )}
-        <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={handleImageUpload} />
+        <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={handleFileChange} />
       </div>
 
       {/* Campos empilhados */}
@@ -106,6 +118,8 @@ export function LotForm({ lot, nextOrder = 0, onClose }: LotFormProps) {
         <label className="mb-1.5 block text-sm font-medium text-foreground">Nome</label>
         <Input name="name" defaultValue={lot?.name ?? ''} required />
       </div>
+
+      <EventDaysInput value={eventDays} onChange={setEventDays} />
 
       <div>
         <label className="mb-1.5 block text-sm font-medium text-foreground">Descrição</label>
