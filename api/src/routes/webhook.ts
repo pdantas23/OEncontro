@@ -76,13 +76,18 @@ app.post('/', async (c) => {
       return c.text('OK', 200)
     }
 
-    // Não sobrescreve status terminal
-    if (['paid', 'refunded'].includes(order.payment_status)) {
-      return c.text('OK', 200)
-    }
-
-    // Atualiza o pedido
-    await supabase
+    // CAS (compare-and-swap) atômico — Task 9.5.
+    //
+    // O guard "não sobrescrever status terminal" vive DENTRO do WHERE deste
+    // UPDATE de propósito — NÃO mover pra cima como if-guard antes do .update().
+    // Mover reintroduz a race condition que esta task fechou: dois webhooks
+    // concorrentes pro mesmo payment_id ambos passariam o if e ambos chamariam
+    // reserve_ticket_slot, incrementando sold_count 2x (principal + combos)
+    // e enviando email duplicado (sendApprovalEmail tem janela SELECT-INSERT-
+    // UPDATE em que o UNIQUE de email_logs só falha DEPOIS do Resend ter sido
+    // chamado). Com o guard no WHERE + .select('id'), só o primeiro webhook
+    // reivindica a transição; os demais veem 0 linhas afetadas e saem.
+    const { data: claimed, error: updateError } = await supabase
       .from('orders_encontro')
       .update({
         payment_status: internalStatus,
@@ -90,6 +95,22 @@ app.post('/', async (c) => {
         updated_at: new Date().toISOString(),
       })
       .eq('id', orderId)
+      .neq('payment_status', 'paid')
+      .neq('payment_status', 'refunded')
+      .select('id')
+
+    if (updateError) {
+      console.error('[webhook] CAS UPDATE falhou:', orderId, updateError.message)
+      return c.text('OK', 200)
+    }
+    if (!claimed || claimed.length === 0) {
+      console.info('[webhook] Idempotente — order já em status terminal', {
+        order_id: orderId,
+        payment_id: paymentId,
+        incoming_status: internalStatus,
+      })
+      return c.text('OK', 200)
+    }
 
     // Se aprovado → incrementa sold_count (principal + combos) + e-mail best-effort
     //
