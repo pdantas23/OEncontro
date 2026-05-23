@@ -1,16 +1,13 @@
 /**
- * src/services/CheckoutService.ts
+ * @deprecated DEAD CODE — não usado em produção.
  *
- * Orquestra a criação de pedidos e o processamento de pagamento.
+ * Este arquivo faz parte da arquitetura ANTERIOR ao Mercado Pago Checkout Pro.
+ * O fluxo atual de produção é: src/app/checkout/actions.ts → API Hono /create-order.
  *
- * Fluxo:
- * 1. Valida lote (ativo, preço atual do DB)
- * 2. Reserva vagas atomicamente via TicketLotService.reserve()
- * 3. Calcula totais com preços do DB (nunca confia no cliente)
- * 4. Cria order na DB
- * 5. Chama o adapter de pagamento (Pix ou Cartão)
- * 6. Atualiza order com dados do pagamento
- * 7. Em caso de falha: TicketLotService.release() como compensação
+ * Mantido temporariamente. Verificado em 2026-05-23 durante a Task 4 do projeto
+ * de Order Bumps de Ingresso. Confirmado: zero imports em produção.
+ *
+ * TODO: deletar em task de limpeza dedicada (validar fanout completo antes).
  */
 
 import { TicketLotRepository } from '@/repositories/TicketLotRepository'

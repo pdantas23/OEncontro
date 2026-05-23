@@ -1,14 +1,18 @@
 /**
- * src/services/EmailService.ts
+ * @deprecated DEAD CODE — não usado em produção.
  *
- * Envio de e-mails transacionais via Resend.
- * Retry: 3 tentativas com backoff exponencial (1s / 2s / 4s).
- * Logging: cada tentativa registrada individualmente em email_logs.
+ * Este arquivo faz parte da arquitetura ANTERIOR ao Mercado Pago Checkout Pro.
+ * Importado apenas por src/services/email-triggers.ts (que é importado apenas
+ * pelo CheckoutService.ts, também dead). O fluxo de e-mail em produção usa
+ * caminho independente: api/src/routes/webhook.ts → api/src/lib/resend.ts.
  *
- * Os triggers (T094, T095, T096) chamam apenas EmailService.send() —
- * não precisam saber da lógica de retry.
+ * Mantido temporariamente. Verificado em 2026-05-23 durante a Task 4 do projeto
+ * de Order Bumps de Ingresso. Confirmado: dead code transitivo.
  *
- * TODO TF08: configurar RESEND_API_KEY no .env.local
+ * Templates em src/lib/email/templates/ e src/lib/email/client.ts também ficam
+ * órfãos quando este arquivo morrer (verificar fanout na task de limpeza).
+ *
+ * TODO: deletar em task de limpeza dedicada (validar fanout completo antes).
  */
 
 import { render } from '@react-email/components'

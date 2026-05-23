@@ -103,6 +103,8 @@ export interface Database {
           benefits: Json | null
           display_order: number
           image_url: string | null
+          label: string | null
+          event_days: number[] | null
           created_at: string
           updated_at: string
         }
@@ -117,6 +119,8 @@ export interface Database {
           benefits?: Json | null
           display_order?: number
           image_url?: string | null
+          label?: string | null
+          event_days?: number[] | null
           created_at?: string
           updated_at?: string
         }
@@ -131,6 +135,8 @@ export interface Database {
           benefits?: Json | null
           display_order?: number
           image_url?: string | null
+          label?: string | null
+          event_days?: number[] | null
           created_at?: string
           updated_at?: string
         }
@@ -143,6 +149,7 @@ export interface Database {
           name: string
           description: string | null
           price: number
+          image_url: string | null
           stock_limit: number | null
           sold_count: number
           has_sizes: boolean
@@ -156,6 +163,7 @@ export interface Database {
           name: string
           description?: string | null
           price: number
+          image_url?: string | null
           stock_limit?: number | null
           sold_count?: number
           has_sizes?: boolean
@@ -169,6 +177,7 @@ export interface Database {
           name?: string
           description?: string | null
           price?: number
+          image_url?: string | null
           stock_limit?: number | null
           sold_count?: number
           has_sizes?: boolean
@@ -178,6 +187,58 @@ export interface Database {
           updated_at?: string
         }
         Relationships: []
+      }
+
+      ticket_lot_bumps_encontro: {
+        Row: {
+          id: string
+          principal_lot_id: string
+          offered_lot_id: string
+          discount_type: 'percent' | 'fixed' | null
+          discount_value: number | null
+          display_order: number
+          active: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          principal_lot_id: string
+          offered_lot_id: string
+          discount_type?: 'percent' | 'fixed' | null
+          discount_value?: number | null
+          display_order?: number
+          active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          principal_lot_id?: string
+          offered_lot_id?: string
+          discount_type?: 'percent' | 'fixed' | null
+          discount_value?: number | null
+          display_order?: number
+          active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'ticket_lot_bumps_encontro_principal_lot_id_fkey'
+            columns: ['principal_lot_id']
+            isOneToOne: false
+            referencedRelation: 'ticket_lots_encontro'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'ticket_lot_bumps_encontro_offered_lot_id_fkey'
+            columns: ['offered_lot_id']
+            isOneToOne: false
+            referencedRelation: 'ticket_lots_encontro'
+            referencedColumns: ['id']
+          },
+        ]
       }
 
       speakers_encontro: {
@@ -225,6 +286,7 @@ export interface Database {
           end_time: string | null
           talk_title: string
           speaker_id: string | null
+          item_type: string
           description: string | null
           display_order: number
           created_at: string
@@ -237,6 +299,7 @@ export interface Database {
           end_time?: string | null
           talk_title: string
           speaker_id?: string | null
+          item_type?: string
           description?: string | null
           display_order?: number
           created_at?: string
@@ -249,6 +312,7 @@ export interface Database {
           end_time?: string | null
           talk_title?: string
           speaker_id?: string | null
+          item_type?: string
           description?: string | null
           display_order?: number
           created_at?: string
@@ -283,6 +347,7 @@ export interface Database {
           pix_code: string | null
           pix_qrcode_url: string | null
           pix_expires_at: string | null
+          has_inventory_issue: boolean
           created_at: string
           updated_at: string
         }
@@ -303,6 +368,7 @@ export interface Database {
           pix_code?: string | null
           pix_qrcode_url?: string | null
           pix_expires_at?: string | null
+          has_inventory_issue?: boolean
           created_at?: string
           updated_at?: string
         }
@@ -323,6 +389,7 @@ export interface Database {
           pix_code?: string | null
           pix_qrcode_url?: string | null
           pix_expires_at?: string | null
+          has_inventory_issue?: boolean
           created_at?: string
           updated_at?: string
         }

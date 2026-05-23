@@ -1,12 +1,13 @@
 /**
- * src/lib/paymentAdapter.ts
+ * @deprecated DEAD CODE — não usado em produção.
  *
- * Factory do adapter de pagamento.
- * Retorna MockPaymentAdapter em desenvolvimento/testes.
+ * Este arquivo faz parte da arquitetura ANTERIOR ao Mercado Pago Checkout Pro.
+ * O fluxo atual de produção é: src/app/checkout/actions.ts → API Hono /create-order.
  *
- * TODO TF08: substituir por adapter real (Stripe / Pagar.me / Asaas / Mercado Pago)
- *   import { RealPaymentAdapter } from '@/adapters/RealPaymentAdapter'
- *   if (process.env.NODE_ENV === 'production') return new RealPaymentAdapter()
+ * Mantido temporariamente. Verificado em 2026-05-23 durante a Task 4 do projeto
+ * de Order Bumps de Ingresso. Confirmado: zero imports em produção.
+ *
+ * TODO: deletar em task de limpeza dedicada (validar fanout completo antes).
  */
 
 import { MockPaymentAdapter } from '@/adapters/MockPaymentAdapter'

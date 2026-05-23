@@ -1,7 +1,19 @@
 /**
- * T121 — EmailService unit tests
+ * @deprecated DEAD CODE — teste de código não usado em produção.
  *
- * Testa retry até 3 tentativas, backoff, idempotência e logging correto.
+ * Este teste exercita EmailService, que faz parte da arquitetura ANTERIOR
+ * ao Mercado Pago Checkout Pro. EmailService é importado apenas por
+ * src/services/email-triggers.ts, que por sua vez só é importado pelo
+ * CheckoutService.ts (dead). O fluxo de e-mail em produção é independente:
+ * api/src/routes/webhook.ts → api/src/lib/resend.ts.
+ *
+ * Mantido temporariamente. Verificado em 2026-05-23 durante a Task 4 do projeto
+ * de Order Bumps de Ingresso. Confirmado: o SUT é dead code transitivo.
+ *
+ * ⚠️ COBERTURA ENGANOSA: este teste continua passando no CI mas não valida
+ * nenhum caminho de produção. Não usar como referência de cobertura real.
+ *
+ * TODO: deletar junto com o SUT em task de limpeza dedicada.
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
@@ -104,6 +116,7 @@ const makeOrder = (overrides: Partial<Order> = {}): Order => ({
   pix_code: '00020101pix-code-fake',
   pix_qrcode_url: null,
   pix_expires_at: null,
+  has_inventory_issue: false,
   created_at: new Date().toISOString(),
   updated_at: new Date().toISOString(),
   ...overrides,

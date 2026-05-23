@@ -48,11 +48,56 @@ export interface BuyerData {
   cpf?: string
 }
 
+// ⚠️ TODO: estes tipos estão DESSINCRONIZADOS com api/src/types/ enquanto a Task 9
+// do plano de Order Bumps não for executada. Ver decisão "Opção Y — independência
+// de build" no comentário do OrderSummary acima. Quando a Task 9 chegar, espelhar
+// SelectedBump/PersistedBumpItem na API.
+
+export type BumpItemType = 'merchandise' | 'ticket_lot'
+
 export interface SelectedBump {
+  type: BumpItemType
+  /**
+   * Quando type='merchandise': order_bumps_encontro.id (produto físico).
+   * Quando type='ticket_lot':  ticket_lot_bumps_encontro.id (REGRA DE COMBO aplicada).
+   */
   id: string
+  /** Lote oferecido (preenchido só quando type='ticket_lot'). */
+  ticket_lot_id?: string
   name: string
-  price: number // centavos
+  /** Preço efetivamente pago (já com desconto aplicado). */
+  price: number
+  /** Preço cheio (só quando houve promoção). */
+  original_price?: number
+  /** Só para mercadoria com has_sizes. */
   size?: string
+  /** Default 1 — preparado para uso futuro, sem UI ainda. */
+  quantity?: number
+}
+
+/**
+ * Shape de cada item no jsonb orders_encontro.order_bumps.
+ *
+ * SEMÂNTICA DO CAMPO `id` (importante para auditoria):
+ * - type='merchandise': id = order_bumps_encontro.id (produto físico)
+ * - type='ticket_lot':  id = ticket_lot_bumps_encontro.id (REGRA DE COMBO aplicada)
+ *                       e ticket_lot_id = ticket_lots_encontro.id (lote em si)
+ *
+ * Essa separação permite rastrear qual combo gerou a venda mesmo depois
+ * de o admin desativar/alterar a regra.
+ *
+ * Backward compat: itens antigos sem `type` são tratados como 'merchandise'
+ * (era o único formato antes desta feature).
+ */
+export interface PersistedBumpItem {
+  type?: BumpItemType
+  id: string
+  ticket_lot_id?: string
+  name: string
+  price: number
+  original_price?: number
+  size?: string | null
+  quantity?: number
 }
 
 export interface CheckoutState {

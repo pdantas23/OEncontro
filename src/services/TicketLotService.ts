@@ -1,11 +1,13 @@
 /**
- * src/services/TicketLotService.ts
+ * @deprecated DEAD CODE — não usado em produção.
  *
- * Reserva atômica e liberação de vagas de ingressos.
- * Usa RPCs Supabase para garantir atomicidade — sem race conditions.
+ * Este arquivo faz parte da arquitetura ANTERIOR ao Mercado Pago Checkout Pro.
+ * O fluxo atual de produção é: src/app/checkout/actions.ts → API Hono /create-order.
  *
- * reserve() → chama reserve_ticket_slot (FOR UPDATE lock)
- * release() → chama release_ticket_slot (compensação em falha/expiração)
+ * Mantido temporariamente. Verificado em 2026-05-23 durante a Task 4 do projeto
+ * de Order Bumps de Ingresso. Confirmado: zero imports em produção.
+ *
+ * TODO: deletar em task de limpeza dedicada (validar fanout completo antes).
  */
 
 import { createClient } from '@/lib/supabase/server'

@@ -1,14 +1,14 @@
 /**
- * src/services/email-triggers.ts
+ * @deprecated DEAD CODE — não usado em produção.
  *
- * Triggers de e-mail — chamados pelos pontos certos do fluxo.
- * Cada trigger simplesmente chama EmailService.send() sem saber de retry.
+ * Este arquivo faz parte da arquitetura ANTERIOR ao Mercado Pago Checkout Pro.
+ * Importado apenas pelo CheckoutService.ts (dead). O fluxo de e-mail em
+ * produção é independente: api/src/routes/webhook.ts → api/src/lib/resend.ts.
  *
- * T094: onPixGenerated    — após geração do QR Code
- * T095: onPaymentApproved — após confirmação do pagamento (Pix ou cartão)
- * T096: onPixExpired      — quando polling detecta expiração do Pix
+ * Mantido temporariamente. Verificado em 2026-05-23 durante a Task 4 do projeto
+ * de Order Bumps de Ingresso. Confirmado: dead code transitivo.
  *
- * Falhas são logadas mas não propagadas — nunca bloquear o fluxo principal.
+ * TODO: deletar em task de limpeza dedicada (validar fanout completo antes).
  */
 
 import { EmailService } from './EmailService'

@@ -1,5 +1,19 @@
 /**
- * T124 — Webhook idempotency tests
+ * @deprecated DEAD CODE — teste de código não usado em produção.
+ *
+ * Apesar do nome, este teste exercita EmailService (não o webhook real).
+ * EmailService faz parte da arquitetura ANTERIOR ao Mercado Pago Checkout Pro:
+ * importado apenas por src/services/email-triggers.ts, que por sua vez é
+ * importado apenas pelo CheckoutService.ts (dead). O fluxo de e-mail em
+ * produção é independente: api/src/routes/webhook.ts → api/src/lib/resend.ts.
+ *
+ * Mantido temporariamente. Verificado em 2026-05-23 durante a Task 4 do projeto
+ * de Order Bumps de Ingresso. Confirmado: o SUT é dead code transitivo.
+ *
+ * ⚠️ COBERTURA ENGANOSA: este teste continua passando no CI mas não valida
+ * nenhum caminho de produção. Não usar como referência de cobertura real.
+ *
+ * TODO: deletar junto com o SUT em task de limpeza dedicada.
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
@@ -103,6 +117,7 @@ function makeOrder(id: string): Order {
     pix_code: 'fake-pix-code',
     pix_qrcode_url: null,
     pix_expires_at: null,
+    has_inventory_issue: false,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   }

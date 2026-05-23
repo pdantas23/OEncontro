@@ -6,6 +6,7 @@
  */
 
 import { useState } from 'react'
+import Image from 'next/image'
 import { formatCurrency } from '@/utils/format'
 import { Button } from '@/components/ui/Button'
 import { cn } from '@/utils/cn'
@@ -28,7 +29,7 @@ export function Step2OrderBumps({ bumps, defaultSelected = [], onNext, onBack }:
     setSelected((prev) => {
       const exists = prev.find((s) => s.id === bump.id)
       if (exists) return prev.filter((s) => s.id !== bump.id)
-      return [...prev, { id: bump.id, name: bump.name, price: bump.price }]
+      return [...prev, { type: 'merchandise', id: bump.id, name: bump.name, price: bump.price }]
     })
   }
 
@@ -84,7 +85,18 @@ export function Step2OrderBumps({ bumps, defaultSelected = [], onNext, onBack }:
                 )}
                 aria-pressed={sel}
               >
-                <div className="flex items-start justify-between gap-3">
+                <div className="flex items-start gap-3">
+                  {bump.image_url && (
+                    <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-md border border-border">
+                      <Image
+                        src={bump.image_url}
+                        alt={bump.name}
+                        fill
+                        className="object-cover"
+                        sizes="64px"
+                      />
+                    </div>
+                  )}
                   <div className="min-w-0 flex-1">
                     <p className="font-medium text-foreground">{bump.name}</p>
                     {bump.description && (
