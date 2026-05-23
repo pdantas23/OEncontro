@@ -91,17 +91,93 @@ app.post('/', async (c) => {
       })
       .eq('id', orderId)
 
-    // Se aprovado → incrementa sold_count + e-mail best-effort
+    // Se aprovado → incrementa sold_count (principal + combos) + e-mail best-effort
+    //
+    // sold_count só é incrementado aqui (no pagamento aprovado), NÃO na criação
+    // do pedido. Isso garante que o admin só vê ingressos como vendidos após
+    // pagamento real.
+    //
+    // Task 9: reserve_ticket_slot retorna boolean (false = oversell, sem error).
+    // Antes desta task o webhook só lia `error` e engolia oversells silenciosamente
+    // — para o principal isso era um bug pré-existente; agora marcamos
+    // has_inventory_issue=true para qualquer falha (principal ou combo).
     if (internalStatus === 'paid') {
-      // sold_count só é incrementado aqui (no pagamento aprovado),
-      // NÃO na criação do pedido. Isso garante que o admin só vê
-      // ingressos como vendidos após pagamento real.
-      const { error: slotError } = await supabase.rpc('reserve_ticket_slot', {
+      let inventoryIssue = false
+
+      // Principal
+      const { data: principalOk, error: principalErr } = await supabase.rpc('reserve_ticket_slot', {
         p_lot_id: order.ticket_lot_id,
         p_quantity: order.ticket_quantity,
       })
-      if (slotError) {
-        console.error('[webhook] Erro ao incrementar sold_count:', slotError.message)
+      if (principalErr) {
+        console.error('[webhook] Erro ao incrementar sold_count do principal:', {
+          order_id: orderId,
+          buyer_email: order.buyer_email,
+          ticket_lot_id: order.ticket_lot_id,
+          message: principalErr.message,
+        })
+        inventoryIssue = true
+      } else if (principalOk === false) {
+        console.error('[webhook] OVERSELL principal — vagas insuficientes no momento do pagamento', {
+          order_id: orderId,
+          buyer_email: order.buyer_email,
+          ticket_lot_id: order.ticket_lot_id,
+          quantity: order.ticket_quantity,
+        })
+        inventoryIssue = true
+      }
+
+      // Combos (ticket_lot bumps) — itera order_bumps com proteção contra jsonb malformado
+      const bumpsRaw = order.order_bumps
+      if (Array.isArray(bumpsRaw)) {
+        for (const item of bumpsRaw) {
+          try {
+            if (!item || typeof item !== 'object') continue
+            const b = item as Record<string, unknown>
+            if (b.type !== 'ticket_lot') continue
+            const ticketLotId = b.ticket_lot_id
+            if (typeof ticketLotId !== 'string') continue
+
+            const { data: comboOk, error: comboErr } = await supabase.rpc('reserve_ticket_slot', {
+              p_lot_id: ticketLotId,
+              p_quantity: 1,
+            })
+            if (comboErr) {
+              console.error('[webhook] Erro ao incrementar sold_count de combo:', {
+                order_id: orderId,
+                buyer_email: order.buyer_email,
+                combo_id: b.id,
+                ticket_lot_id: ticketLotId,
+                offered_name: b.name,
+                message: comboErr.message,
+              })
+              inventoryIssue = true
+            } else if (comboOk === false) {
+              console.error('[webhook] OVERSELL combo bump — vagas esgotaram entre /create-order e webhook', {
+                order_id: orderId,
+                buyer_email: order.buyer_email,
+                combo_id: b.id,
+                ticket_lot_id: ticketLotId,
+                offered_name: b.name,
+              })
+              inventoryIssue = true
+            }
+          } catch (itemErr) {
+            console.error('[webhook] Erro inesperado em bump (skip silencioso):', {
+              order_id: orderId,
+              item,
+              error: itemErr instanceof Error ? itemErr.message : String(itemErr),
+            })
+          }
+        }
+      }
+
+      // Marca order pra atenção do operador se houve oversell em qualquer ponto
+      if (inventoryIssue) {
+        await supabase
+          .from('orders_encontro')
+          .update({ has_inventory_issue: true })
+          .eq('id', orderId)
       }
 
       await sendApprovalEmail(order)

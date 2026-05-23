@@ -28,7 +28,7 @@ export async function createOrderAction(input: unknown): Promise<CreateOrderResu
         buyer_email: buyerEmail,
         buyer_whatsapp: buyerWhatsapp,
         buyer_cpf: buyerCpf ?? null,
-        bumps: bumps?.map((b) => ({ id: b.id, size: b.size })) ?? [],
+        bumps: bumps?.map((b) => ({ id: b.id, type: b.type, size: b.size })) ?? [],
       }),
     })
 

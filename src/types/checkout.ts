@@ -48,11 +48,6 @@ export interface BuyerData {
   cpf?: string
 }
 
-// ⚠️ TODO: estes tipos estão DESSINCRONIZADOS com api/src/types/ enquanto a Task 9
-// do plano de Order Bumps não for executada. Ver decisão "Opção Y — independência
-// de build" no comentário do OrderSummary acima. Quando a Task 9 chegar, espelhar
-// SelectedBump/PersistedBumpItem na API.
-
 export type BumpItemType = 'merchandise' | 'ticket_lot'
 
 export interface SelectedBump {

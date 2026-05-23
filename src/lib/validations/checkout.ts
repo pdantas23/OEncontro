@@ -39,6 +39,7 @@ export type Step1Values = z.infer<typeof step1Schema>
 
 export const selectedBumpSchema = z.object({
   id: z.string().uuid(),
+  type: z.enum(['merchandise', 'ticket_lot']).optional(), // default 'merchandise' no servidor
   size: z.string().optional(),
 })
 

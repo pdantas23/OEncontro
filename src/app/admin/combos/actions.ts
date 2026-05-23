@@ -122,13 +122,31 @@ export async function updateComboAction(id: string, formData: unknown) {
 }
 
 export async function deleteComboAction(id: string) {
-  // TODO (Task 9): adicionar pre-check antes de DELETE.
-  // Após Task 9, combos com vendas registradas (referenciados em
-  // orders_encontro.order_bumps[].id) NÃO podem ser excluídos —
-  // apenas desativados via toggle.
-  // Implementação: query em orders_encontro com filtro jsonb
-  // (order_bumps @> '[{"type":"ticket_lot","id":"<combo_id>"}]')
   const supabase = createClient()
+
+  // Pre-check: combos referenciados em orders_encontro.order_bumps NÃO podem
+  // ser excluídos — apenas desativados via toggle. Preserva rastreabilidade
+  // da venda quando o admin precisa investigar histórico.
+  //
+  // Filtro jsonb @>[{type:'ticket_lot', id}]: a Task 9 garante que TODO order
+  // novo com combo carrega type='ticket_lot' no item. Orders pre-Task 9 nunca
+  // tiveram combos (feature nova), então não há falso-negativo retroativo.
+  // Se a tabela orders passar de ~10k linhas, considerar índice GIN em order_bumps.
+  const { count, error: countError } = await supabase
+    .from('orders_encontro')
+    .select('id', { count: 'exact', head: true })
+    .contains('order_bumps', [{ type: 'ticket_lot', id }])
+
+  if (countError) {
+    return { success: false as const, error: 'Erro ao validar exclusão do combo.' }
+  }
+  if ((count ?? 0) > 0) {
+    return {
+      success: false as const,
+      error: `Este combo tem ${count} venda(s) registrada(s) e não pode ser excluído. Desative-o no toggle "Ativo" para parar de oferecê-lo.`,
+    }
+  }
+
   const { error } = await supabase.from('ticket_lot_bumps_encontro').delete().eq('id', id)
   if (error) return { success: false as const, error: error.message }
   return { success: true as const }

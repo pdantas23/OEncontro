@@ -10,6 +10,7 @@
 
 import { Hono } from 'hono'
 import { getSupabase } from '../lib/supabase.js'
+import { computeBumpFinalPrice } from '../lib/bumps.js'
 
 const app = new Hono()
 
@@ -127,10 +128,6 @@ app.get('/lots/:id/bumps', async (c) => {
     } | null
   }
 
-  const round2 = (x: number) => Number(x.toFixed(2))
-  const fmtPercent = (v: number) => (v % 1 === 0 ? `${v}% OFF` : `${v.toFixed(1)}% OFF`)
-  const fmtFixed = (v: number) => `R$ ${v.toFixed(2).replace('.', ',')} OFF`
-
   type EligibleBump = {
     id: string
     type: 'ticket_lot'
@@ -169,16 +166,11 @@ app.get('/lots/:id/bumps', async (c) => {
     if (overlap.length > 0) continue
 
     const originalPrice = offered.price
-    let finalPrice = originalPrice
-    let discount: EligibleBump['discount'] = null
-
-    if (row.discount_type === 'percent' && row.discount_value != null) {
-      finalPrice = round2(originalPrice * (1 - row.discount_value / 100))
-      discount = { type: 'percent', value: row.discount_value, label: fmtPercent(row.discount_value) }
-    } else if (row.discount_type === 'fixed' && row.discount_value != null) {
-      finalPrice = round2(originalPrice - row.discount_value)
-      discount = { type: 'fixed', value: row.discount_value, label: fmtFixed(row.discount_value) }
-    }
+    const { finalPrice, discount } = computeBumpFinalPrice(
+      originalPrice,
+      row.discount_type,
+      row.discount_value,
+    )
 
     if (finalPrice <= 0) continue
 
