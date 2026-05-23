@@ -1,28 +1,39 @@
 @AGENTS.md
 
-## Revisão por agente revisor (strategy-reviewer)
+## Protocolo de revisão e aprovação (2 sub-agentes)
 
-Há um sub-agente especializado em revisão tática em `.claude/agents/strategy-reviewer.md`.
+Há 2 sub-agentes especializados em .claude/agents/:
+- **strategy-reviewer**: análise tática profunda. Lê código, valida implementação, identifica buracos. NÃO aprova.
+- **strategic-overseer**: aprovação final autônoma. Decide cadência, autoriza prosseguimento. Substitui aprovação humana exceto em backups.
 
-**Triggers de invocação OBRIGATÓRIA** (antes de pedir aprovação ao humano):
-- Plano de task que envolva migration de DB
+### Fluxo padrão (toda decisão táctica ou estratégica)
+
+1. Apresenta plano/decisão internamente
+2. Se trigger técnico aplica (ver lista abaixo), invoca @strategy-reviewer com plano completo
+3. Invoca @strategic-overseer com plano + análise do reviewer (se houver)
+4. Overseer responde com VEREDITO (APROVAR / APROVAR COM AJUSTES / PEDIR INFO / ESCALAR)
+5. Executa conforme veredito do overseer
+
+### Triggers de invocação do strategy-reviewer (análise técnica)
+- Plano de task com migration de DB
 - Mudança em /create-order ou /mp-webhook
 - Mudança em CheckoutWizard, Step1/2/3
 - Decisão arquitetural não coberta no plano original
-- Mudança de cadência (acelerar/desacelerar blocos)
+- Mudança de cadência
 - Relatório de fim de bloco
 - Falha de tsc/build/vitest
 
-**Fluxo**:
-1. Apresenta plano/decisão internamente
-2. Invoca @strategy-reviewer com o plano completo
-3. Recebe análise estruturada do revisor
-4. Apresenta AMBOS (plano original + análise do revisor) ao humano
-5. Humano aprova/ajusta com base nas duas visões
+NÃO invocar reviewer para: updates curtos de progresso, refactor simples, tasks já planejadas em detalhe.
 
-**NÃO invocar** para:
-- Updates curtos de progresso ("Task X concluída")
-- Implementação direta de algo já aprovado em plano detalhado
-- Tasks de tipo/refactor sem decisão de arquitetura
+### Triggers de ESCALAÇÃO AO HUMANO (overseer NÃO aprova sozinho)
+1. Aplicação de migration de DB (humano roda backup + aprova texto)
+2. Falha catastrófica (tsc/build/vitest com múltiplos consertos falhados)
+3. Decisão arquitetural que muda contrato público já em uso
+4. Erro em produção identificado durante execução
+5. Mudança de escopo maior (adicionar/remover tasks)
+6. Custo/risco fora do esperado (task >2x estimativa)
+7. Conflito irresolvido entre overseer e strategy-reviewer
+8. Humano pediu inline ("me avisa quando X")
 
-O revisor COMPLEMENTA a revisão humana, não substitui. Humano sempre é a aprovação final.
+### Tudo o resto
+Overseer decide. Não pause pra perguntar ao humano fora dos triggers acima.
