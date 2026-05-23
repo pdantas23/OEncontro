@@ -41,7 +41,10 @@ export function Step3Resumo({ state, onBack }: Step3ResumoProps) {
         buyerEmail: buyer!.email,
         buyerWhatsapp: buyer!.whatsapp,
         buyerCpf: buyer!.cpf ?? null,
-        bumps: bumps.map((b) => ({ id: b.id, size: b.size })),
+        // type SEMPRE enviado (fallback explícito a 'merchandise' — não envia
+        // undefined). Sem isso, o servidor faria default merchandise e
+        // buscaria UUID de combo na tabela errada.
+        bumps: bumps.map((b) => ({ id: b.id, type: b.type ?? 'merchandise', size: b.size })),
         paymentMethod: 'mercadopago',
       })
 
@@ -70,14 +73,26 @@ export function Step3Resumo({ state, onBack }: Step3ResumoProps) {
           <span className="tabular-nums text-foreground">{formatCurrency(subtotal)}</span>
         </div>
 
-        {/* Order bumps */}
+        {/* Order bumps (merchandise + combos com badge e preço original riscado) */}
         {bumps.map((b) => (
-          <div key={b.id} className="flex justify-between text-sm">
+          <div key={`${b.type ?? 'merchandise'}-${b.id}`} className="flex justify-between text-sm">
             <span className="text-muted-foreground">
               {b.name}
               {b.size && <span className="ml-1 text-xs">({b.size})</span>}
+              {b.type === 'ticket_lot' && (
+                <span className="ml-1.5 rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary">
+                  Combo
+                </span>
+              )}
             </span>
-            <span className="tabular-nums text-foreground">{formatCurrency(b.price)}</span>
+            <span className="flex items-baseline gap-1.5">
+              {b.type === 'ticket_lot' && b.original_price && b.original_price > b.price && (
+                <span className="text-xs text-muted-foreground line-through tabular-nums">
+                  {formatCurrency(b.original_price)}
+                </span>
+              )}
+              <span className="tabular-nums text-foreground">{formatCurrency(b.price)}</span>
+            </span>
           </div>
         ))}
 

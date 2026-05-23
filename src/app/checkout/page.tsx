@@ -6,6 +6,7 @@ import { apiFetch } from '@/services/api/client'
 import { CheckoutWizard } from '@/components/checkout/CheckoutWizard'
 import type { TicketLot } from '@/repositories/TicketLotRepository'
 import type { OrderBump } from '@/repositories/OrderBumpRepository'
+import type { EligibleBump } from '@/types/bumps'
 
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? ''
 
@@ -16,6 +17,7 @@ function CheckoutInner() {
 
   const [lot, setLot] = useState<TicketLot | null>(null)
   const [activeBumps, setActiveBumps] = useState<OrderBump[]>([])
+  const [combos, setCombos] = useState<EligibleBump[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -32,9 +34,10 @@ function CheckoutInner() {
 
     async function load() {
       try {
-        const [lotData, bumpsData] = await Promise.all([
+        const [lotData, bumpsData, combosData] = await Promise.all([
           apiFetch<TicketLot>(`/lots/${lotId}`),
           apiFetch<OrderBump[]>('/order-bumps'),
+          apiFetch<EligibleBump[]>(`/lots/${lotId}/bumps`),
         ])
 
         if (!lotData || lotData.status !== 'active' || (lotData.total_limit - lotData.sold_count) <= 0) {
@@ -44,6 +47,7 @@ function CheckoutInner() {
 
         setLot(lotData)
         setActiveBumps(bumpsData)
+        setCombos(combosData)
         setLoading(false)
       } catch (err) {
         console.error('[checkout] Erro ao carregar dados:', err)
@@ -77,7 +81,7 @@ function CheckoutInner() {
             )}
           </p>
         </div>
-        <CheckoutWizard lot={lot} activeBumps={activeBumps} />
+        <CheckoutWizard lot={lot} activeBumps={activeBumps} combos={combos} />
       </div>
     </main>
   )

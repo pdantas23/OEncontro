@@ -21,6 +21,7 @@ import { Step2OrderBumps } from './steps/Step2OrderBumps'
 import { Step3Resumo } from './steps/Step3Resumo'
 import type { OrderBump } from '@/repositories/OrderBumpRepository'
 import type { TicketLot } from '@/repositories/TicketLotRepository'
+import type { EligibleBump } from '@/types/bumps'
 import type {
   CheckoutState,
   CheckoutAction,
@@ -59,6 +60,7 @@ function checkoutReducer(state: CheckoutState, action: CheckoutAction): Checkout
 interface CheckoutWizardProps {
   lot: TicketLot
   activeBumps: OrderBump[]
+  combos?: EligibleBump[]
 }
 
 // ---------------------------------------------------------------------------
@@ -71,7 +73,7 @@ const STEP_LABELS = ['Seus dados', 'Adicionais', 'Pagamento']
 // Componente
 // ---------------------------------------------------------------------------
 
-export function CheckoutWizard({ lot, activeBumps }: CheckoutWizardProps) {
+export function CheckoutWizard({ lot, activeBumps, combos = [] }: CheckoutWizardProps) {
   const available = lot.total_limit - lot.sold_count
 
   const [state, dispatch] = useReducer(checkoutReducer, {
@@ -128,6 +130,7 @@ export function CheckoutWizard({ lot, activeBumps }: CheckoutWizardProps) {
       {state.step === 2 && (
         <Step2OrderBumps
           bumps={activeBumps}
+          combos={combos}
           defaultSelected={state.bumps}
           onNext={handleStep2Next}
           onBack={() => dispatch({ type: 'PREV_STEP' })}
