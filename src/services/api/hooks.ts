@@ -12,12 +12,48 @@ import { useState, useEffect } from 'react'
 import { apiFetch } from './client'
 import type { TicketLot } from '@/repositories/TicketLotRepository'
 import type { OrderBump } from '@/repositories/OrderBumpRepository'
+import type { EligibleBump } from '@/types/bumps'
 
 // Tipo genérico para o estado do hook
 interface UseApiState<T> {
   data: T
   loading: boolean
   error: string | null
+}
+
+/**
+ * Variante condicional: aceita path null/'' e mantém loading=true até
+ * receber path válido. Previne flash de empty state durante resolução
+ * assíncrona de parâmetros (ex: lotId vindo de useSearchParams).
+ */
+function useApiConditional<T>(path: string | null, fallback: T): UseApiState<T> {
+  const [data, setData] = useState<T>(fallback)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!path) return // mantém loading=true; outro render com path válido dispara fetch
+    let cancelled = false
+
+    apiFetch<T>(path)
+      .then((result) => {
+        if (!cancelled) {
+          setData(result)
+          setLoading(false)
+        }
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          console.error(`[useApiConditional] ${path}:`, err)
+          setError(err instanceof Error ? err.message : 'Erro desconhecido')
+          setLoading(false)
+        }
+      })
+
+    return () => { cancelled = true }
+  }, [path])
+
+  return { data, loading, error }
 }
 
 function useApi<T>(path: string, fallback: T): UseApiState<T> {
@@ -63,6 +99,10 @@ export function useLot(id: string) {
 
 export function useOrderBumps() {
   return useApi<OrderBump[]>('/order-bumps', [])
+}
+
+export function useLotBumps(lotId: string | null) {
+  return useApiConditional<EligibleBump[]>(lotId ? `/lots/${lotId}/bumps` : null, [])
 }
 
 // Tipos inline para dados que não têm type export pronto
