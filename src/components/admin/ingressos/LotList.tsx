@@ -221,7 +221,7 @@ export function LotList({ lots: initialLots }: LotListProps) {
           <ModalHeader><ModalTitle>Excluir lote</ModalTitle></ModalHeader>
           <ModalBody>
             <div className="space-y-4">
-              {deleteError && <Alert variant="destructive">{deleteError}</Alert>}
+              {deleteError && <Alert variant="destructive"><div className="whitespace-pre-line">{deleteError}</div></Alert>}
               <p className="text-sm text-muted-foreground">
                 Tem certeza que deseja excluir o lote{' '}
                 <strong className="text-foreground">{deleting?.name}</strong>?

@@ -7,9 +7,9 @@ import {
   Users,
   Ticket,
   ShoppingBag,
+  Layers,
   Calendar,
   Mic2,
-  Settings,
   LogOut,
   BarChart2,
 } from 'lucide-react'
@@ -22,9 +22,9 @@ const NAV_ITEMS = [
   { label: 'Vendas',        href: '/admin/compradores',  icon: BarChart2 },
   { label: 'Ingressos',     href: '/admin/ingressos',    icon: Ticket },
   { label: 'Mercadorias',   href: '/admin/order-bumps',  icon: ShoppingBag },
+  { label: 'Combos',        href: '/admin/combos',       icon: Layers },
   { label: 'Palestrantes',  href: '/admin/palestrantes', icon: Mic2 },
   { label: 'Programação',   href: '/admin/programacao',  icon: Calendar },
-  { label: 'Configurações', href: '/admin/configuracoes',icon: Settings },
 ]
 
 export interface AdminSidebarProps {
@@ -42,14 +42,17 @@ export function AdminSidebar({ className }: AdminSidebarProps) {
       )}
       aria-label="Menu administrativo"
     >
-      {/* Logo / título */}
+      {/* Logo */}
       <div className="flex h-16 items-center border-b border-border px-6">
         <Link
           href="/admin/dashboard"
-          className="font-display text-base font-semibold text-primary transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
-          {/* Task Final TF03 */}
-          Painel Admin
+          <img
+            src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/logo2.png`}
+            alt="O Encontro 2026"
+            className="h-8 w-auto"
+          />
         </Link>
       </div>
 

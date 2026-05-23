@@ -78,7 +78,7 @@ export function LotForm({ lot, nextOrder = 0, onClose }: LotFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      {error && <Alert variant="destructive">{error}</Alert>}
+      {error && <Alert variant="destructive"><div className="whitespace-pre-line">{error}</div></Alert>}
 
       {/* Imagem — preview grande */}
       <div>
