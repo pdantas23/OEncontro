@@ -42,6 +42,10 @@ function checkoutReducer(state: CheckoutState, action: CheckoutAction): Checkout
       return { ...state, bumps: action.bumps }
     case 'SET_QUANTITY':
       return { ...state, quantity: Math.max(1, Math.min(action.quantity, state.lotAvailable)) }
+    case 'SET_ACCEPT_IMAGE_RIGHTS':
+      return { ...state, acceptImageRights: action.value }
+    case 'SET_ACCEPT_PURCHASE_TERMS':
+      return { ...state, acceptPurchaseTerms: action.value }
     case 'NEXT_STEP':
       return { ...state, step: Math.min(state.step + 1, 3) as CheckoutStep }
     case 'PREV_STEP':
@@ -85,6 +89,8 @@ export function CheckoutWizard({ lot, activeBumps, combos = [] }: CheckoutWizard
     quantity: 1,
     buyer: null,
     bumps: [],
+    acceptImageRights: false,
+    acceptPurchaseTerms: false,
   } satisfies CheckoutState)
 
   // T100 — select_ticket ao montar o wizard
@@ -140,6 +146,7 @@ export function CheckoutWizard({ lot, activeBumps, combos = [] }: CheckoutWizard
       {state.step === 3 && (
         <Step3Resumo
           state={state}
+          dispatch={dispatch}
           onBack={() => dispatch({ type: 'PREV_STEP' })}
         />
       )}

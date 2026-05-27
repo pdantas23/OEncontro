@@ -104,12 +104,19 @@ export interface CheckoutState {
   quantity: number
   buyer: BuyerData | null
   bumps: SelectedBump[]
+  // Aceites obrigatórios do Step 3. Vivem no reducer para persistir entre
+  // navegação Step3 → Step2 → Step3 (se vivessem em useState do Step3,
+  // resetariam a cada remount).
+  acceptImageRights: boolean
+  acceptPurchaseTerms: boolean
 }
 
 export type CheckoutAction =
   | { type: 'SET_BUYER'; buyer: BuyerData }
   | { type: 'SET_BUMPS'; bumps: SelectedBump[] }
   | { type: 'SET_QUANTITY'; quantity: number }
+  | { type: 'SET_ACCEPT_IMAGE_RIGHTS'; value: boolean }
+  | { type: 'SET_ACCEPT_PURCHASE_TERMS'; value: boolean }
   | { type: 'NEXT_STEP' }
   | { type: 'PREV_STEP' }
   | { type: 'GO_TO_STEP'; step: CheckoutStep }

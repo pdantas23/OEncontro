@@ -40,6 +40,12 @@ export interface OrderRow {
   pix_code: string | null
   pix_qrcode_url: string | null
   pix_expires_at: string | null
+  accept_image_rights: boolean
+  accept_image_rights_version: string | null
+  accept_image_rights_at: string | null
+  accept_purchase_terms: boolean
+  accept_purchase_terms_version: string | null
+  accept_purchase_terms_at: string | null
   created_at: string
   updated_at: string
 }

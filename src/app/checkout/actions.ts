@@ -13,7 +13,17 @@ export async function createOrderAction(input: unknown): Promise<CreateOrderResu
     }
   }
 
-  const { lotId, quantity, buyerName, buyerEmail, buyerWhatsapp, buyerCpf, bumps } = parsed.data
+  const {
+    lotId,
+    quantity,
+    buyerName,
+    buyerEmail,
+    buyerWhatsapp,
+    buyerCpf,
+    bumps,
+    acceptImageRightsVersion,
+    acceptPurchaseTermsVersion,
+  } = parsed.data
   const apiUrl = env.NEXT_PUBLIC_API_URL
 
   try {
@@ -29,6 +39,10 @@ export async function createOrderAction(input: unknown): Promise<CreateOrderResu
         buyer_whatsapp: buyerWhatsapp,
         buyer_cpf: buyerCpf ?? null,
         bumps: bumps?.map((b) => ({ id: b.id, type: b.type, size: b.size })) ?? [],
+        accept_image_rights: true,
+        accept_image_rights_version: acceptImageRightsVersion,
+        accept_purchase_terms: true,
+        accept_purchase_terms_version: acceptPurchaseTermsVersion,
       }),
     })
 

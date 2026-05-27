@@ -43,6 +43,14 @@ const bodySchema = z.object({
     type: z.enum(['merchandise', 'ticket_lot']).optional(), // default 'merchandise'
     size: z.string().optional(),
   })).default([]),
+  accept_image_rights: z.literal(true, {
+    errorMap: () => ({ message: 'Aceite do termo de direito de imagem obrigatório' }),
+  }),
+  accept_image_rights_version: z.string().min(1).max(50),
+  accept_purchase_terms: z.literal(true, {
+    errorMap: () => ({ message: 'Aceite das regras de compra obrigatório' }),
+  }),
+  accept_purchase_terms_version: z.string().min(1).max(50),
 })
 
 type MerchPersistItem = {
@@ -72,7 +80,17 @@ app.post('/', async (c) => {
     }, 400)
   }
 
-  const { lot_id, quantity, buyer_name, buyer_email, buyer_whatsapp, buyer_cpf, bumps } = parsed.data
+  const {
+    lot_id,
+    quantity,
+    buyer_name,
+    buyer_email,
+    buyer_whatsapp,
+    buyer_cpf,
+    bumps,
+    accept_image_rights_version,
+    accept_purchase_terms_version,
+  } = parsed.data
   const supabase = getSupabase()
 
   // 1. Valida lote principal (preço e status do DB — nunca confiar no client)
@@ -253,6 +271,7 @@ app.post('/', async (c) => {
 
   // 4. Insere pedido (service role bypassa RLS)
   const persistedBumps: Array<MerchPersistItem | ComboPersistItem> = [...merchItems, ...comboItems]
+  const consentTimestamp = new Date().toISOString()
   const { data: order, error: orderError } = await supabase
     .from('orders_encontro')
     .insert({
@@ -267,6 +286,12 @@ app.post('/', async (c) => {
       subtotal,
       total,
       order_bumps: persistedBumps.length > 0 ? persistedBumps : null,
+      accept_image_rights: true,
+      accept_image_rights_version,
+      accept_image_rights_at: consentTimestamp,
+      accept_purchase_terms: true,
+      accept_purchase_terms_version,
+      accept_purchase_terms_at: consentTimestamp,
     })
     .select('id')
     .single()

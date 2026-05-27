@@ -96,6 +96,14 @@ export const createOrderSchema = z.object({
   bumps: z.array(selectedBumpSchema),
   paymentMethod: z.enum(['pix', 'card', 'mercadopago']),
   card: cardSchema.optional(),
+  acceptImageRights: z.literal(true, {
+    message: 'Você precisa aceitar o termo de direito de imagem',
+  }),
+  acceptImageRightsVersion: z.string().min(1).max(50),
+  acceptPurchaseTerms: z.literal(true, {
+    message: 'Você precisa aceitar as regras de compra',
+  }),
+  acceptPurchaseTermsVersion: z.string().min(1).max(50),
 })
   .refine(
     (data) => data.paymentMethod !== 'card' || data.card !== undefined,

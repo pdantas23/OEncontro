@@ -135,6 +135,10 @@ describe('createOrderSchema', () => {
     buyerCpf: null,
     bumps: [],
     paymentMethod: 'pix' as const,
+    acceptImageRights: true as const,
+    acceptImageRightsVersion: 'v1-2026-05-27',
+    acceptPurchaseTerms: true as const,
+    acceptPurchaseTermsVersion: 'v1-2026-05-27',
   }
 
   it('aceita pedido Pix válido', () => {
@@ -182,5 +186,47 @@ describe('createOrderSchema', () => {
       },
     })
     expect(result.success).toBe(true)
+  })
+
+  it('rejeita acceptImageRights = false', () => {
+    const result = createOrderSchema.safeParse({ ...validPix, acceptImageRights: false })
+    expect(result.success).toBe(false)
+    if (!result.success) {
+      const paths = result.error.issues.map((i) => i.path.join('.'))
+      expect(paths).toContain('acceptImageRights')
+    }
+  })
+
+  it('rejeita acceptImageRights ausente', () => {
+    const { acceptImageRights: _omit, ...rest } = validPix
+    void _omit
+    const result = createOrderSchema.safeParse(rest)
+    expect(result.success).toBe(false)
+  })
+
+  it('rejeita acceptImageRightsVersion vazio', () => {
+    const result = createOrderSchema.safeParse({ ...validPix, acceptImageRightsVersion: '' })
+    expect(result.success).toBe(false)
+  })
+
+  it('rejeita acceptPurchaseTerms = false', () => {
+    const result = createOrderSchema.safeParse({ ...validPix, acceptPurchaseTerms: false })
+    expect(result.success).toBe(false)
+    if (!result.success) {
+      const paths = result.error.issues.map((i) => i.path.join('.'))
+      expect(paths).toContain('acceptPurchaseTerms')
+    }
+  })
+
+  it('rejeita acceptPurchaseTerms ausente', () => {
+    const { acceptPurchaseTerms: _omit, ...rest } = validPix
+    void _omit
+    const result = createOrderSchema.safeParse(rest)
+    expect(result.success).toBe(false)
+  })
+
+  it('rejeita acceptPurchaseTermsVersion vazio', () => {
+    const result = createOrderSchema.safeParse({ ...validPix, acceptPurchaseTermsVersion: '' })
+    expect(result.success).toBe(false)
   })
 })
