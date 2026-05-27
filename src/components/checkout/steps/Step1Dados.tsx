@@ -3,6 +3,10 @@
 /**
  * Step1Dados — Dados pessoais do comprador.
  * Etapa 1 do checkout.
+ *
+ * WhatsApp e CPF usam máscara progressiva no input (visual), mas o valor
+ * persistido no estado do wizard é só dígitos — mais limpo no banco e
+ * compatível com a validação `length === 11` do CPF no servidor.
  */
 
 import { useForm } from 'react-hook-form'
@@ -10,6 +14,12 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { step1Schema, type Step1Values } from '@/lib/validations/checkout'
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
+import {
+  maskPhoneProgressive,
+  maskCpfProgressive,
+  formatPhone,
+  formatCPF,
+} from '@/utils/format'
 import type { BuyerData } from '@/types/checkout'
 
 interface Step1DadosProps {
@@ -27,17 +37,22 @@ export function Step1Dados({ defaultValues, onNext }: Step1DadosProps) {
     defaultValues: {
       name: defaultValues?.name ?? '',
       email: defaultValues?.email ?? '',
-      whatsapp: defaultValues?.whatsapp ?? '',
-      cpf: defaultValues?.cpf ?? '',
+      // Defaults vêm com dígitos puros (caso o usuário tenha voltado do Step 2).
+      // Formatamos só para o input refletir a máscara desde o primeiro render.
+      whatsapp: defaultValues?.whatsapp ? formatPhone(defaultValues.whatsapp) : '',
+      cpf: defaultValues?.cpf ? formatCPF(defaultValues.cpf) : '',
     },
   })
+
+  const whatsappReg = register('whatsapp')
+  const cpfReg = register('cpf')
 
   function onSubmit(data: Step1Values) {
     onNext({
       name: data.name,
       email: data.email,
-      whatsapp: data.whatsapp,
-      cpf: data.cpf || undefined,
+      whatsapp: data.whatsapp.replace(/\D/g, ''),
+      cpf: data.cpf ? data.cpf.replace(/\D/g, '') : undefined,
     })
   }
 
@@ -93,11 +108,17 @@ export function Step1Dados({ defaultValues, onNext }: Step1DadosProps) {
         <Input
           id="whatsapp"
           type="tel"
+          inputMode="numeric"
           autoComplete="tel"
           placeholder="(11) 99999-9999"
+          maxLength={15}
           error={!!errors.whatsapp}
           aria-describedby={errors.whatsapp ? 'whatsapp-error' : undefined}
-          {...register('whatsapp')}
+          {...whatsappReg}
+          onChange={(e) => {
+            e.target.value = maskPhoneProgressive(e.target.value)
+            whatsappReg.onChange(e)
+          }}
         />
         {errors.whatsapp && (
           <p id="whatsapp-error" role="alert" className="mt-1 text-xs text-destructive">
@@ -112,11 +133,17 @@ export function Step1Dados({ defaultValues, onNext }: Step1DadosProps) {
         </label>
         <Input
           id="cpf"
+          inputMode="numeric"
           autoComplete="off"
           placeholder="000.000.000-00"
+          maxLength={14}
           error={!!errors.cpf}
           aria-describedby={errors.cpf ? 'cpf-error' : undefined}
-          {...register('cpf')}
+          {...cpfReg}
+          onChange={(e) => {
+            e.target.value = maskCpfProgressive(e.target.value)
+            cpfReg.onChange(e)
+          }}
         />
         {errors.cpf && (
           <p id="cpf-error" role="alert" className="mt-1 text-xs text-destructive">

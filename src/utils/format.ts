@@ -40,6 +40,31 @@ export function formatCPF(cpf: string): string {
   return digits.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4')
 }
 
+/**
+ * Máscara progressiva de telefone — formata enquanto o usuário digita.
+ * Aceita valores parciais (1 a 11 dígitos) e ignora qualquer caractere não-numérico.
+ */
+export function maskPhoneProgressive(value: string): string {
+  const d = value.replace(/\D/g, '').slice(0, 11)
+  if (d.length === 0) return ''
+  if (d.length <= 2) return `(${d}`
+  if (d.length <= 6) return `(${d.slice(0, 2)}) ${d.slice(2)}`
+  if (d.length <= 10) return `(${d.slice(0, 2)}) ${d.slice(2, 6)}-${d.slice(6)}`
+  return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7, 11)}`
+}
+
+/**
+ * Máscara progressiva de CPF — formata enquanto o usuário digita.
+ * Aceita valores parciais (1 a 11 dígitos) e ignora qualquer caractere não-numérico.
+ */
+export function maskCpfProgressive(value: string): string {
+  const d = value.replace(/\D/g, '').slice(0, 11)
+  if (d.length <= 3) return d
+  if (d.length <= 6) return `${d.slice(0, 3)}.${d.slice(3)}`
+  if (d.length <= 9) return `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6)}`
+  return `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6, 9)}-${d.slice(9, 11)}`
+}
+
 /** Retorna iniciais de um nome (ex: "Ana Lima" → "AL") */
 export function getInitials(name: string): string {
   return name
