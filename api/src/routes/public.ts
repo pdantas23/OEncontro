@@ -276,6 +276,7 @@ app.get('/schedule', async (c) => {
     .from('schedule_encontro')
     .select('*, speaker:speakers_encontro(*)')
     .order('day', { ascending: true })
+    .order('start_time', { ascending: true })
     .order('display_order', { ascending: true })
 
   if (error) {
