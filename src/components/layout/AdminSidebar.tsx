@@ -12,6 +12,7 @@ import {
   Mic2,
   LogOut,
   BarChart2,
+  Frame,
 } from 'lucide-react'
 import { cn } from '@/utils/cn'
 import { ExternalLink } from 'lucide-react'
@@ -25,6 +26,7 @@ const NAV_ITEMS = [
   { label: 'Combos',        href: '/admin/combos',       icon: Layers },
   { label: 'Palestrantes',  href: '/admin/palestrantes', icon: Mic2 },
   { label: 'Programação',   href: '/admin/programacao',  icon: Calendar },
+  { label: 'Moldura',       href: '/admin/moldura',      icon: Frame },
 ]
 
 export interface AdminSidebarProps {
