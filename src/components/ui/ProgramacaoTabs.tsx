@@ -11,8 +11,7 @@
  */
 
 import Image from 'next/image'
-import { Clock } from 'lucide-react'
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/Tabs'
+import { Clock, UtensilsCrossed, Coffee, Mic, Users, Flag } from 'lucide-react'
 import { Avatar } from '@/components/ui/Avatar'
 import { formatTime } from '@/utils/format'
 import { getInitials } from '@/utils/format'
@@ -24,13 +23,25 @@ interface ProgramacaoTabsProps {
   className?: string
 }
 
+const TYPE_ICONS: Record<string, React.ElementType> = {
+  palestra: Mic,
+  almoco: UtensilsCrossed,
+  coffee_break: Coffee,
+  abertura: Flag,
+  encerramento: Flag,
+  networking: Users,
+  outro: Clock,
+}
+
 function ScheduleCard({ item }: { item: ScheduleItemWithSpeaker }) {
+  const Icon = TYPE_ICONS[item.item_type] ?? Clock
+
   return (
     <div className="flex gap-4">
       {/* Linha do tempo */}
       <div className="flex flex-col items-center">
         <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 ring-2 ring-primary/30">
-          <Clock className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
+          <Icon className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
         </div>
         <div className="mt-2 w-px flex-1 bg-border" aria-hidden="true" />
       </div>
@@ -97,42 +108,24 @@ export function ProgramacaoTabs({ schedule, className }: ProgramacaoTabsProps) {
   }
 
   const days = [...new Set(schedule.map((s) => s.day))].sort((a, b) => a - b)
-  const isSingleDay = days.length === 1
 
-  if (isSingleDay) {
-    // Linha do tempo vertical
-    return (
-      <div className={cn('space-y-0', className)}>
-        {schedule.map((item) => (
-          <ScheduleCard key={item.id} item={item} />
-        ))}
-      </div>
-    )
-  }
-
-  // Abas por dia
   return (
-    <Tabs defaultValue={`dia-${days[0]}`} className={className}>
-      <TabsList className="mb-8">
-        {days.map((day) => (
-          <TabsTrigger key={day} value={`dia-${day}`}>
-            Dia {day}
-          </TabsTrigger>
-        ))}
-      </TabsList>
-
+    <div className={cn('grid gap-8 md:grid-cols-3', className)}>
       {days.map((day) => {
         const dayItems = schedule.filter((s) => s.day === day)
         return (
-          <TabsContent key={day} value={`dia-${day}`}>
-            <div>
+          <div key={day}>
+            <h3 className="mb-6 text-start font-display text-xl font-semibold text-foreground">
+              Dia {day}
+            </h3>
+            <div className="space-y-0">
               {dayItems.map((item) => (
                 <ScheduleCard key={item.id} item={item} />
               ))}
             </div>
-          </TabsContent>
+          </div>
         )
       })}
-    </Tabs>
+    </div>
   )
 }

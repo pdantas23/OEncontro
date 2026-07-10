@@ -17,7 +17,7 @@ export async function sendEmail(input: SendEmailInput): Promise<boolean> {
     return false
   }
 
-  const fromEmail = process.env.RESEND_FROM_EMAIL ?? 'noreply@royalhubacademy.com'
+  const fromEmail = process.env.RESEND_FROM_EMAIL ?? 'noreply@seudominio.com.br'
   const fromName = process.env.RESEND_FROM_NAME ?? 'O Encontro 2026'
 
   try {

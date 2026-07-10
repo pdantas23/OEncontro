@@ -110,28 +110,6 @@ export function ConfigForm({ config }: ConfigFormProps) {
         </div>
       </section>
 
-      {/* Tracking */}
-      <section className="space-y-4">
-        <h2 className="font-display text-base font-semibold text-foreground border-b border-border pb-2">
-          Tracking e analytics {/* TODO TF08 */}
-        </h2>
-
-        <div className="grid grid-cols-3 gap-3">
-          <div>
-            <label className="mb-1.5 block text-sm font-medium text-foreground">Meta Pixel ID</label>
-            <Input name="meta_pixel_id" defaultValue={config.meta_pixel_id ?? ''} placeholder="123456789" />
-          </div>
-          <div>
-            <label className="mb-1.5 block text-sm font-medium text-foreground">GTM ID</label>
-            <Input name="gtm_id" defaultValue={config.gtm_id ?? ''} placeholder="GTM-XXXXXX" />
-          </div>
-          <div>
-            <label className="mb-1.5 block text-sm font-medium text-foreground">Google Ads ID</label>
-            <Input name="google_ads_id" defaultValue={config.google_ads_id ?? ''} placeholder="AW-XXXXXXXXX" />
-          </div>
-        </div>
-      </section>
-
       <div className="flex justify-end pt-2">
         <Button type="submit" loading={isPending} className="min-w-32">
           Salvar configurações

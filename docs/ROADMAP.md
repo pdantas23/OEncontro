@@ -37,7 +37,7 @@ e devem ser rotacionadas antes do go-live:
 - [ ] Configurar `RESEND_FROM_EMAIL` e `RESEND_FROM_NAME`
 - [ ] Testar envio de e-mail de confirmação (pagar com usuário teste do MP)
 
-### 4. Troca de domínio (se/quando mudar de royalhubacademy.com)
+### 4. Troca de domínio
 
 - [ ] Atualizar `notification_url` no painel do Mercado Pago
 - [ ] Atualizar DNS (A/CNAME para API e frontend)

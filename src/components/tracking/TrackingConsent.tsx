@@ -1,15 +1,14 @@
 'use client'
 
 /**
- * TrackingConsent — Banner LGPD + carregamento condicional do GTM.
+ * TrackingConsent — Banner LGPD + carregamento condicional de scripts de rastreamento.
  *
  * Comportamento:
- *   localStorage 'cookie-consent' === 'accepted' → injeta GTM, sem banner
+ *   localStorage 'cookie-consent' === 'accepted' → injeta GTM, Meta Pixel, Google Ads
  *   localStorage 'cookie-consent' === 'rejected' → não carrega nada, sem banner
  *   localStorage não definido → exibe banner de consentimento
  *
- * GTM ID vem do Server Component pai (event_config.gtm_id).
- * Sem GTM ID: dataLayer.push funciona normalmente, mas o GTM não está ativo.
+ * IDs vêm das variáveis de ambiente (NEXT_PUBLIC_*), passados pelo layout.
  */
 
 import { useState, useEffect } from 'react'
@@ -21,9 +20,11 @@ const CONSENT_KEY = 'cookie-consent'
 
 interface TrackingConsentProps {
   gtmId: string | null
+  metaPixelId: string | null
+  googleAdsId: string | null
 }
 
-export function TrackingConsent({ gtmId }: TrackingConsentProps) {
+export function TrackingConsent({ gtmId, metaPixelId, googleAdsId }: TrackingConsentProps) {
   const [consent, setConsent] = useState<'accepted' | 'rejected' | null | 'loading'>('loading')
 
   useEffect(() => {
@@ -43,10 +44,12 @@ export function TrackingConsent({ gtmId }: TrackingConsentProps) {
     trackConsentRejected()
   }
 
+  const shouldLoad = consent === 'accepted'
+
   return (
     <>
-      {/* GTM script — só injeta após consentimento e se houver ID */}
-      {consent === 'accepted' && gtmId && (
+      {/* GTM */}
+      {shouldLoad && gtmId && (
         <>
           <Script
             id="gtm-script"
@@ -73,7 +76,52 @@ export function TrackingConsent({ gtmId }: TrackingConsentProps) {
         </>
       )}
 
-      {/* Banner LGPD — exibido apenas se consentimento não definido */}
+      {/* Meta Pixel */}
+      {shouldLoad && metaPixelId && (
+        <Script
+          id="meta-pixel"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+              !function(f,b,e,v,n,t,s)
+              {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+              n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+              if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+              n.queue=[];t=b.createElement(e);t.async=!0;
+              t.src=v;s=b.getElementsByTagName(e)[0];
+              s.parentNode.insertBefore(t,s)}(window,document,'script',
+              'https://connect.facebook.net/en_US/fbevents.js');
+              fbq('init','${metaPixelId}');
+              fbq('track','PageView');
+            `,
+          }}
+        />
+      )}
+
+      {/* Google Ads (gtag.js) */}
+      {shouldLoad && googleAdsId && (
+        <>
+          <Script
+            id="google-ads-lib"
+            strategy="afterInteractive"
+            src={`https://www.googletagmanager.com/gtag/js?id=${googleAdsId}`}
+          />
+          <Script
+            id="google-ads-init"
+            strategy="afterInteractive"
+            dangerouslySetInnerHTML={{
+              __html: `
+                window.dataLayer=window.dataLayer||[];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js',new Date());
+                gtag('config','${googleAdsId}');
+              `,
+            }}
+          />
+        </>
+      )}
+
+      {/* Banner LGPD */}
       {consent === null && (
         <div
           role="dialog"
@@ -88,7 +136,7 @@ export function TrackingConsent({ gtmId }: TrackingConsentProps) {
               <a href="/privacidade" className="underline hover:text-foreground transition-colors">
                 Política de Privacidade
               </a>
-              . {/* TODO TF03: ajustar link da política */}
+              .
             </p>
             <div className="flex shrink-0 gap-3">
               <Button variant="outline" size="sm" onClick={reject}>

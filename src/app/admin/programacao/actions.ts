@@ -7,6 +7,7 @@ const scheduleSchema = z.object({
   start_time: z.string().min(1, 'Horário obrigatório'),
   end_time: z.string().optional().nullable(),
   talk_title: z.string().min(1, 'Título obrigatório').max(200),
+  item_type: z.string().min(1).default('palestra'),
   speaker_id: z.string().uuid().optional().nullable(),
   description: z.string().optional().nullable(),
   display_order: z.coerce.number().int().min(0),

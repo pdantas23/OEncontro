@@ -12,9 +12,6 @@ const configSchema = z.object({
   total_ticket_limit: z.coerce.number().int().min(1).optional().nullable(),
   low_stock_threshold: z.coerce.number().int().min(1).optional(),
   sale_status: z.enum(['open', 'closed', 'sold_out']).optional(),
-  meta_pixel_id: z.string().max(50).optional().nullable(),
-  gtm_id: z.string().max(50).optional().nullable(),
-  google_ads_id: z.string().max(50).optional().nullable(),
 })
 
 export async function saveConfigAction(id: string, formData: unknown) {

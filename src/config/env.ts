@@ -23,7 +23,7 @@ const envSchema = z.object({
   NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().min(1, 'NEXT_PUBLIC_SUPABASE_ANON_KEY é obrigatória'),
   SUPABASE_SERVICE_ROLE_KEY: z.string().min(1, 'SUPABASE_SERVICE_ROLE_KEY é obrigatória').optional(),
 
-  // API de pagamento (Hono em api.royalhubacademy.com)
+  // API de pagamento (Hono)
   NEXT_PUBLIC_API_URL: z.string().url('NEXT_PUBLIC_API_URL deve ser uma URL válida'),
 
   // Pagamentos — Mercado Pago Checkout Pro
@@ -33,17 +33,21 @@ const envSchema = z.object({
   NEXT_PUBLIC_PAYMENT_PUBLIC_KEY: z.string().optional(),
   // Resend
   RESEND_API_KEY: z.string().optional(),
-  RESEND_FROM_EMAIL: z.string().email().default('noreply@royalhubacademy.com'),
+  RESEND_FROM_EMAIL: z.string().email().default('noreply@seudominio.com.br'),
   RESEND_FROM_NAME: z.string().default('Evento'),
 
   // App
   NEXT_PUBLIC_APP_URL: z.string().url().default('http://localhost:3000'),
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
 
-  // Rastreamento — Task Final TF15
+  // Rastreamento
   NEXT_PUBLIC_GTM_ID: z.string().optional(),
   NEXT_PUBLIC_META_PIXEL_ID: z.string().optional(),
   NEXT_PUBLIC_GOOGLE_ADS_ID: z.string().optional(),
+
+  // Redes sociais (footer)
+  NEXT_PUBLIC_WHATSAPP_URL: z.string().url().optional().or(z.literal('')),
+  NEXT_PUBLIC_INSTAGRAM_URL: z.string().url().optional().or(z.literal('')),
 })
 
 // ---------------------------------------------------------------------------
@@ -69,6 +73,8 @@ function getEnvVars() {
     NEXT_PUBLIC_GTM_ID: process.env.NEXT_PUBLIC_GTM_ID,
     NEXT_PUBLIC_META_PIXEL_ID: process.env.NEXT_PUBLIC_META_PIXEL_ID,
     NEXT_PUBLIC_GOOGLE_ADS_ID: process.env.NEXT_PUBLIC_GOOGLE_ADS_ID,
+    NEXT_PUBLIC_WHATSAPP_URL: process.env.NEXT_PUBLIC_WHATSAPP_URL,
+    NEXT_PUBLIC_INSTAGRAM_URL: process.env.NEXT_PUBLIC_INSTAGRAM_URL,
   }
 }
 

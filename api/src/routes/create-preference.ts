@@ -32,11 +32,23 @@ app.post('/', async (c) => {
     return c.json({ error: 'Configuração do servidor incompleta' }, 500)
   }
 
-  const appUrl = process.env.APP_URL || 'https://royalhubacademy.com/encontro'
-  if (!process.env.APP_URL) {
-    console.warn('[create-preference] APP_URL não definida, usando fallback: %s', appUrl)
+  const webhookBaseUrl = process.env.WEBHOOK_PUBLIC_URL || publicApiUrl
+  if (/localhost|127\.0\.0\.1/.test(webhookBaseUrl)) {
+    console.warn('[create-preference] AVISO: notification_url aponta pra localhost, MP não conseguirá chamar webhook. Configure WEBHOOK_PUBLIC_URL com URL do ngrok.')
+  }
+  console.log('[create-preference] notification_url:', `${webhookBaseUrl}/mp-webhook`)
+
+  const appUrl = process.env.APP_URL
+  if (!appUrl) {
+    console.error('[create-preference] APP_URL não configurada')
+    return c.json({ error: 'Configuração do servidor incompleta (APP_URL)' }, 500)
   }
   const isSandbox = process.env.MP_SANDBOX === 'true'
+  const isLocalhost = /localhost|127\.0\.0\.1/.test(appUrl)
+
+  if (isLocalhost) {
+    console.log('[create-preference] localhost detectado, auto_return desabilitado')
+  }
 
   const preference: MpPreferenceInput = {
     items: items.map((item) => ({
@@ -55,12 +67,12 @@ app.post('/', async (c) => {
       failure: `${appUrl}/obrigado?order_id=${order_id}`,
       pending: `${appUrl}/obrigado?order_id=${order_id}`,
     },
-    auto_return: 'approved',
+    // auto_return só em produção — MP rejeita com URLs localhost
+    ...(isLocalhost ? {} : { auto_return: 'approved' }),
     external_reference: order_id,
-    notification_url: `${publicApiUrl}/mp-webhook`,
+    notification_url: `${webhookBaseUrl}/mp-webhook`,
     statement_descriptor: 'ENCONTRO',
-    // Preference expira em 30 minutos — pedidos abandonados não ficam
-    // pendentes indefinidamente no MP
+    // Preference expira em 30 minutos
     expiration_date_to: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
   }
 

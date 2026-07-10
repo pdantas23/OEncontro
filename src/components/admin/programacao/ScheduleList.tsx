@@ -29,6 +29,7 @@ import { Modal, ModalContent, ModalHeader, ModalTitle, ModalBody } from '@/compo
 import { Input } from '@/components/ui/Input'
 import { Textarea } from '@/components/ui/Textarea'
 import { Alert } from '@/components/ui/Alert'
+import { Select } from '@/components/ui/Select'
 import { DragHandle } from '@/components/ui/DragHandle'
 import {
   createScheduleItemAction,
@@ -89,6 +90,18 @@ function ScheduleForm({
 }) {
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
+  const [itemType, setItemType] = useState(item?.item_type ?? 'palestra')
+  const [speakerId, setSpeakerId] = useState(item?.speaker_id ?? '')
+
+  const ITEM_TYPES = [
+    { value: 'palestra', label: 'Palestra' },
+    { value: 'almoco', label: 'Almoço' },
+    { value: 'coffee_break', label: 'Coffee Break' },
+    { value: 'abertura', label: 'Abertura' },
+    { value: 'encerramento', label: 'Encerramento' },
+    { value: 'networking', label: 'Networking' },
+    { value: 'outro', label: 'Outro' },
+  ]
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -126,17 +139,35 @@ function ScheduleForm({
       {error && <Alert variant="destructive">{error}</Alert>}
 
       <div>
-        <label className="mb-1.5 block text-sm font-medium text-foreground">Título da palestra</label>
+        <label className="mb-1.5 block text-sm font-medium text-foreground">Título</label>
         <Input name="talk_title" defaultValue={item?.talk_title ?? ''} required />
       </div>
 
       <div>
-        <label className="mb-1.5 block text-sm font-medium text-foreground">Palestrante (opcional)</label>
-        <select name="speaker_id" defaultValue={item?.speaker_id ?? ''} className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
-          <option value="">— Sem palestrante —</option>
-          {speakers.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
-        </select>
+        <label className="mb-1.5 block text-sm font-medium text-foreground">Tipo</label>
+        <input type="hidden" name="item_type" value={itemType} />
+        <Select
+          options={ITEM_TYPES}
+          value={itemType}
+          onValueChange={setItemType}
+        />
       </div>
+
+      {itemType === 'palestra' && (
+        <div>
+          <label className="mb-1.5 block text-sm font-medium text-foreground">Palestrante (opcional)</label>
+          <input type="hidden" name="speaker_id" value={speakerId === '__none__' ? '' : speakerId} />
+          <Select
+            options={[
+              { value: '__none__', label: '— Sem palestrante —' },
+              ...speakers.map((s) => ({ value: s.id, label: s.name })),
+            ]}
+            value={speakerId || '__none__'}
+            onValueChange={setSpeakerId}
+            placeholder="Selecionar palestrante..."
+          />
+        </div>
+      )}
 
       <div className="grid grid-cols-3 gap-3">
         <div>
@@ -195,6 +226,11 @@ function SortableRow({
         <p className="text-xs font-medium text-primary">
           Dia {item.day} · {formatTime(item.start_time)}
           {item.end_time && ` – ${formatTime(item.end_time)}`}
+          {item.item_type && item.item_type !== 'palestra' && (
+            <span className="ml-2 rounded bg-muted px-1.5 py-0.5 text-[10px] uppercase text-muted-foreground">
+              {item.item_type.replace('_', ' ')}
+            </span>
+          )}
         </p>
         <p className="font-medium text-foreground">{item.talk_title}</p>
         {item.speaker && <p className="text-sm text-muted-foreground">{item.speaker.name}</p>}

@@ -54,7 +54,7 @@ function Select({
       <RadixSelect.Portal>
         <RadixSelect.Content
           className={cn(
-            'relative z-50 min-w-[8rem] overflow-hidden rounded border border-border bg-secondary shadow-md',
+            'relative z-50 w-[var(--radix-select-trigger-width)] overflow-hidden rounded border border-border bg-secondary shadow-md',
             'animate-scale-in',
           )}
           position="popper"

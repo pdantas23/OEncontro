@@ -211,7 +211,7 @@ mv .env.local.bak .env.local
 #    (substituir todo o conteúdo de public_html/encontro/)
 
 # 4. Verificar:
-#    - https://royalhubacademy.com/encontro → home carrega
+#    - https://seudominio.com.br/encontro → home carrega
 #    - Lotes aparecem (via API, não estáticos)
 #    - Login admin funciona (botão não trava mais)
 #    - Checkout: clicar "Garantir minha participação" → redireciona pro MP

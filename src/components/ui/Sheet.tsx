@@ -47,6 +47,8 @@ function SheetContent({ side = 'right', className, children, ...props }: SheetCo
         aria-modal="true"
         {...props}
       >
+        <RadixDialog.Title className="sr-only">Menu</RadixDialog.Title>
+        <RadixDialog.Description className="sr-only">Menu de navegação</RadixDialog.Description>
         <RadixDialog.Close className="absolute right-4 top-4 rounded p-1 text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
           <X className="h-5 w-5" />
           <span className="sr-only">Fechar</span>

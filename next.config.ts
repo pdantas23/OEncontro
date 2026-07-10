@@ -5,13 +5,15 @@ const withBundleAnalyzer = bundleAnalyzer({
   enabled: process.env.ANALYZE === 'true',
 })
 
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH || ''
+
 const nextConfig: NextConfig = {
   output: 'export',
   trailingSlash: true,
-  basePath: '/encontro',
+  ...(basePath ? { basePath } : {}),
 
   env: {
-    NEXT_PUBLIC_BASE_PATH: '/encontro',
+    NEXT_PUBLIC_BASE_PATH: basePath,
   },
 
   images: {

@@ -8,6 +8,8 @@ declare global {
   interface Window {
     /** dataLayer do Google Tag Manager */
     dataLayer: Record<string, unknown>[]
+    /** Meta Pixel */
+    fbq?: (...args: unknown[]) => void
   }
 }
 

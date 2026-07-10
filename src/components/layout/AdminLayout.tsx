@@ -23,7 +23,7 @@ export function AdminLayout({ children, className }: AdminLayoutProps) {
 
       {/* Sidebar mobile (Sheet) */}
       <Sheet open={mobileSidebarOpen} onOpenChange={setMobileSidebarOpen}>
-        <SheetContent side="left" className="w-64 p-0">
+        <SheetContent side="right" className="w-64 p-0">
           <AdminSidebar className="border-0" />
         </SheetContent>
       </Sheet>
@@ -31,18 +31,19 @@ export function AdminLayout({ children, className }: AdminLayoutProps) {
       {/* Conteúdo principal */}
       <div className="flex flex-1 flex-col overflow-hidden">
         {/* Header mobile */}
-        <header className="flex h-16 items-center gap-4 border-b border-border bg-secondary px-4 lg:hidden">
+        <header className="relative flex h-16 items-center justify-center border-b border-border bg-secondary px-4 lg:hidden">
+          <img
+            src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/logo2.png`}
+            alt="O Encontro 2026"
+            className="h-7 w-auto"
+          />
           <button
             onClick={() => setMobileSidebarOpen(true)}
-            className="rounded p-2 text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="absolute right-4 rounded p-2 text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             aria-label="Abrir menu"
           >
             <Menu className="h-5 w-5" />
           </button>
-          <span className="font-display text-sm font-semibold text-primary">
-            {/* Task Final TF03 */}
-            Painel Admin
-          </span>
         </header>
 
         {/* Área de scroll */}

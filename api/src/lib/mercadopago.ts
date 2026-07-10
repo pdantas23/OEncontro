@@ -10,7 +10,7 @@ export interface MpPreferenceInput {
   items: Array<{ title: string; quantity: number; unit_price: number; currency_id: string }>
   payer: { name: string; email: string; identification?: { type: string; number: string } }
   back_urls: { success: string; failure: string; pending: string }
-  auto_return: string
+  auto_return?: string
   external_reference: string
   notification_url: string
   statement_descriptor: string

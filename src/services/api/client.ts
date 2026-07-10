@@ -1,7 +1,7 @@
 /**
  * src/services/api/client.ts
  *
- * Cliente HTTP para a API Hono (api.royalhubacademy.com).
+ * Cliente HTTP para a API Hono.
  * Usado pelos hooks de dados públicos em vez de Supabase direto.
  */
 

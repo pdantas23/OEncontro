@@ -5,6 +5,7 @@ import createOrder from './routes/create-order.js'
 import createPreference from './routes/create-preference.js'
 import webhook from './routes/webhook.js'
 import publicRoutes from './routes/public.js'
+import emailPreview from './routes/email-preview.js'
 
 const app = new Hono()
 
@@ -56,6 +57,11 @@ app.get('/health', (c) => c.json({ ok: true }))
 app.route('/create-order', createOrder)
 app.route('/create-preference', createPreference)
 app.route('/mp-webhook', webhook)
+
+// Preview de e-mail (somente dev)
+if (process.env.NODE_ENV !== 'production') {
+  app.route('/email-preview', emailPreview)
+}
 
 // Dados públicos (leitura)
 app.route('/', publicRoutes)

@@ -9,7 +9,7 @@
  */
 
 import { useEffect, useState } from 'react'
-import { TrendingUp, Ticket, Clock, BarChart2 } from 'lucide-react'
+import { TrendingUp, Ticket, BarChart2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { formatCurrency } from '@/utils/format'
 import type { KpiData } from '@/repositories/DashboardRepository'
@@ -30,12 +30,6 @@ const cards = (kpis: KpiData) => [
     value: formatCurrency(kpis.totalRevenue),
     icon: TrendingUp,
     color: 'text-emerald-500',
-  },
-  {
-    label: 'Pix pendentes',
-    value: kpis.pendingPix.toString(),
-    icon: Clock,
-    color: 'text-amber-500',
   },
   {
     label: 'Conversão',
@@ -88,7 +82,7 @@ export function KpiCards({ initial }: KpiCardsProps) {
   }, [])
 
   return (
-    <dl className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+    <dl className="grid grid-cols-1 gap-4 sm:grid-cols-3">
       {cards(kpis).map((card) => {
         const Icon = card.icon
         return (

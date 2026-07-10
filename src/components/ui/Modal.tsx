@@ -46,7 +46,7 @@ function ModalContent({
       <ModalOverlay />
       <RadixDialog.Content
         className={cn(
-          'fixed left-1/2 top-1/2 z-50 w-full -translate-x-1/2 -translate-y-1/2',
+          'fixed left-1/2 top-1/2 z-50 w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2',
           'rounded-lg border border-border bg-secondary shadow-xl',
           'animate-scale-in',
           'focus:outline-none',

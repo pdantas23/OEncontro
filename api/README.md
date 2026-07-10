@@ -54,16 +54,16 @@ SUPABASE_URL=                       # ex: https://supabase.flexofertas.shop
 SUPABASE_SERVICE_ROLE_KEY=          # service role key
 
 # URLs públicas
-PUBLIC_API_URL=                     # ex: https://api.royalhubacademy.com
-APP_URL=                            # ex: https://royalhubacademy.com/encontro
+PUBLIC_API_URL=                     # ex: https://api.seudominio.com.br
+APP_URL=                            # ex: https://seudominio.com.br/encontro
 CORS_ALLOWED_ORIGINS=               # OBRIGATÓRIA em produção. Comma-separated.
                                     # Se vazia, NENHUMA origem cross-origin é aceita
                                     # (o frontend não consegue chamar /create-preference).
-                                    # ex: https://royalhubacademy.com,https://www.royalhubacademy.com
+                                    # ex: https://seudominio.com.br,https://www.seudominio.com.br
 
 # Resend (opcional nesta fase)
 RESEND_API_KEY=                     # deixar vazio para desabilitar
-RESEND_FROM_EMAIL=                  # default: noreply@royalhubacademy.com
+RESEND_FROM_EMAIL=                  # default: noreply@seudominio.com.br
 RESEND_FROM_NAME=                   # default: O Encontro 2026
 
 # Servidor
@@ -77,7 +77,7 @@ PORT=3000                           # default 3000
 3. Build path: `/api`
 4. Dockerfile path: `/api/Dockerfile`
 5. Porta: `3000`
-6. Domínio: `api.royalhubacademy.com`
+6. Domínio: configurar o domínio da API no EasyPanel
 7. Configurar env vars no painel "Ambiente" (valores reais)
-8. Cadastrar `https://api.royalhubacademy.com/mp-webhook` como
+8. Cadastrar `https://<DOMINIO_API>/mp-webhook` como
    `notification_url` no painel do Mercado Pago

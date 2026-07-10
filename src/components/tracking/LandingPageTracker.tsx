@@ -23,10 +23,8 @@ const TRACKED_SECTIONS = [
   'programacao',
   'palestrantes',
   'memorias',
-  'feedbacks',
   'ingressos',
   'faq',
-  'cta-final',
 ]
 
 export function LandingPageTracker() {

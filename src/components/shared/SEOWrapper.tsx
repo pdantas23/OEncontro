@@ -8,7 +8,7 @@ import type { Metadata } from 'next'
  *   export const metadata = buildMetadata({ title: 'Ingressos' })
  */
 
-const SITE_NAME = 'Evento' // Task Final TF03: substituir
+const SITE_NAME = 'O Encontro 2026'
 
 export interface BuildMetadataInput {
   title?: string
@@ -23,7 +23,7 @@ export function buildMetadata({
   image = '/og-image.jpg', // Task Final TF05: substituir pela OG image real
   noIndex = false,
 }: BuildMetadataInput = {}): Metadata {
-  const fullTitle = title ? `${title} | ${SITE_NAME}` : SITE_NAME
+  const fullTitle = !title || title === SITE_NAME ? SITE_NAME : `${title} | ${SITE_NAME}`
 
   return {
     title: fullTitle,

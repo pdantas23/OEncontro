@@ -69,25 +69,25 @@ Todos retornam `{ data: T }` ou `{ data: null/[], error: string }`.
 
 ### Sequência de deploy
 1. **Push já foi feito para main** — EasyPanel rebuilda a API automaticamente
-2. **Verificar que a API tem os endpoints novos:** `curl https://api.royalhubacademy.com/lots`
+2. **Verificar que a API tem os endpoints novos:** `curl https://api.seudominio.com.br/lots`
 3. **NÃO precisa de novas env vars** — endpoints públicos usam o Supabase service role que já está configurado
 4. **Build do frontend:** `mv .env.local .env.local.bak && npm run build && mv .env.local.bak .env.local`
 5. **Deploy do `out/`** para Hostinger (substituir arquivos existentes)
-6. **Testar no site:** abrir royalhubacademy.com/encontro e verificar se lotes/palestrantes/programação carregam
+6. **Testar no site:** abrir seudominio.com.br/encontro e verificar se lotes/palestrantes/programação carregam
 
 ### Testes sugeridos
 ```bash
 # API endpoints
-curl https://api.royalhubacademy.com/health
-curl https://api.royalhubacademy.com/lots
-curl https://api.royalhubacademy.com/speakers
-curl https://api.royalhubacademy.com/schedule
-curl https://api.royalhubacademy.com/event-config
-curl https://api.royalhubacademy.com/order-bumps
+curl https://api.seudominio.com.br/health
+curl https://api.seudominio.com.br/lots
+curl https://api.seudominio.com.br/speakers
+curl https://api.seudominio.com.br/schedule
+curl https://api.seudominio.com.br/event-config
+curl https://api.seudominio.com.br/order-bumps
 
 # CORS
-curl -I -X OPTIONS https://api.royalhubacademy.com/lots \
-  -H "Origin: https://royalhubacademy.com"
+curl -I -X OPTIONS https://api.seudominio.com.br/lots \
+  -H "Origin: https://seudominio.com.br"
 ```
 
 ## Itens não resolvidos
@@ -98,7 +98,7 @@ curl -I -X OPTIONS https://api.royalhubacademy.com/lots \
 
 ## Riscos identificados
 
-1. **API cai → home mostra skeletons:** Se `api.royalhubacademy.com` ficar indisponível, as seções dinâmicas (lotes, speakers, programação) mostram loading/skeleton. O restante da home (hero, sobre, FAQ) continua renderizando normalmente.
+1. **API cai → home mostra skeletons:** Se `api.seudominio.com.br` ficar indisponível, as seções dinâmicas (lotes, speakers, programação) mostram loading/skeleton. O restante da home (hero, sobre, FAQ) continua renderizando normalmente.
 2. **CORS mal configurado:** Se `CORS_ALLOWED_ORIGINS` não incluir o domínio correto do frontend, as chamadas falham silenciosamente. Verificar com `curl -X OPTIONS`.
 3. **Cache de 30s nos endpoints** (reduzido de 5min em 2026-05-20). Subir para 5min quando estável.
 

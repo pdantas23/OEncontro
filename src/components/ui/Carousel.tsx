@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { cn } from '@/utils/cn'
 
@@ -27,6 +27,11 @@ export function Carousel({
   itemClassName,
 }: CarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0)
+  const [isTouching, setIsTouching] = useState(false)
+  const touchStartX = useRef(0)
+  const touchDeltaX = useRef(0)
+  const isDragging = useRef(false)
+  const touchTimeout = useRef<ReturnType<typeof setTimeout>>(undefined)
 
   const goTo = useCallback(
     (index: number) => {
@@ -38,25 +43,52 @@ export function Carousel({
   const prev = useCallback(() => goTo(currentIndex - 1), [currentIndex, goTo])
   const next = useCallback(() => goTo(currentIndex + 1), [currentIndex, goTo])
 
+  function handleTouchStart(e: React.TouchEvent) {
+    touchStartX.current = e.touches[0].clientX
+    touchDeltaX.current = 0
+    isDragging.current = true
+    setIsTouching(true)
+    clearTimeout(touchTimeout.current)
+  }
+
+  function handleTouchMove(e: React.TouchEvent) {
+    if (!isDragging.current) return
+    touchDeltaX.current = e.touches[0].clientX - touchStartX.current
+  }
+
+  function handleTouchEnd() {
+    if (!isDragging.current) return
+    isDragging.current = false
+    const threshold = 50
+    if (touchDeltaX.current < -threshold) next()
+    else if (touchDeltaX.current > threshold) prev()
+    touchTimeout.current = setTimeout(() => setIsTouching(false), 1500)
+  }
+
   if (items.length === 0) return null
 
   return (
     <div
-      className={cn('relative', className)}
+      className={cn('group/carousel relative', className)}
       role="region"
       aria-label="Carrossel"
       aria-roledescription="carousel"
     >
       {/* Track */}
-      <div className="overflow-hidden rounded-lg">
+      <div
+        className="overflow-hidden rounded-lg"
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
         <div
-          className="flex transition-transform duration-300 ease-out"
+          className="flex items-stretch transition-transform duration-300 ease-out"
           style={{ transform: `translateX(-${currentIndex * 100}%)` }}
         >
           {items.map((item, i) => (
             <div
               key={item.id}
-              className={cn('w-full shrink-0', itemClassName)}
+              className={cn('flex w-full shrink-0', itemClassName)}
               role="group"
               aria-roledescription="slide"
               aria-label={`Slide ${i + 1} de ${items.length}`}
@@ -68,19 +100,25 @@ export function Carousel({
         </div>
       </div>
 
-      {/* Arrows */}
+      {/* Arrows — transparentes, visíveis apenas na interação */}
       {showArrows && items.length > 1 && (
         <>
           <button
             onClick={prev}
-            className="absolute left-2 top-1/2 -translate-y-1/2 flex h-10 w-10 items-center justify-center rounded-full bg-background/80 text-foreground shadow-md backdrop-blur-sm transition-colors hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className={cn(
+              'absolute left-2 top-1/2 -translate-y-1/2 flex h-10 w-10 items-center justify-center rounded-full text-muted-foreground transition-opacity duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring group-hover/carousel:opacity-100',
+              isTouching ? 'opacity-100' : 'opacity-0',
+            )}
             aria-label="Slide anterior"
           >
             <ChevronLeft className="h-5 w-5" />
           </button>
           <button
             onClick={next}
-            className="absolute right-2 top-1/2 -translate-y-1/2 flex h-10 w-10 items-center justify-center rounded-full bg-background/80 text-foreground shadow-md backdrop-blur-sm transition-colors hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className={cn(
+              'absolute right-2 top-1/2 -translate-y-1/2 flex h-10 w-10 items-center justify-center rounded-full text-muted-foreground transition-opacity duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring group-hover/carousel:opacity-100',
+              isTouching ? 'opacity-100' : 'opacity-0',
+            )}
             aria-label="Próximo slide"
           >
             <ChevronRight className="h-5 w-5" />

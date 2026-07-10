@@ -1,19 +1,25 @@
 'use client'
 
 import { Suspense, useEffect, useState } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { useSearchParams, usePathname } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { ObrigadoContent } from '@/components/obrigado/ObrigadoContent'
+import { trackPageView } from '@/utils/tracking'
 import type { OrderSummary } from '@/types/checkout'
 
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? ''
 
 function ObrigadoInner() {
   const searchParams = useSearchParams()
+  const pathname = usePathname()
   const orderId = searchParams.get('order_id')
 
   const [order, setOrder] = useState<OrderSummary | null>(null)
   const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    trackPageView(pathname)
+  }, [pathname])
 
   useEffect(() => {
     // static export: window.location em vez de router.replace
