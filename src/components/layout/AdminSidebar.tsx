@@ -27,6 +27,7 @@ const NAV_ITEMS = [
   { label: 'Palestrantes',  href: '/admin/palestrantes', icon: Mic2 },
   { label: 'Programação',   href: '/admin/programacao',  icon: Calendar },
   { label: 'Moldura',       href: '/admin/moldura',      icon: Frame },
+  { label: 'Usuários',      href: '/admin/usuarios',     icon: Users },
 ]
 
 export interface AdminSidebarProps {

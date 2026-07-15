@@ -6,6 +6,7 @@ import createPreference from './routes/create-preference.js'
 import webhook from './routes/webhook.js'
 import publicRoutes from './routes/public.js'
 import emailPreview from './routes/email-preview.js'
+import adminUsers from './routes/admin-users.js'
 
 const app = new Hono()
 
@@ -46,6 +47,8 @@ app.use('/schedule/*', corsMiddleware)
 app.use('/schedule', corsMiddleware)
 app.use('/event-config/*', corsMiddleware)
 app.use('/event-config', corsMiddleware)
+app.use('/admin/users/*', corsMiddleware)
+app.use('/admin/users', corsMiddleware)
 
 // ---------------------------------------------------------------------------
 // Rotas
@@ -57,6 +60,9 @@ app.get('/health', (c) => c.json({ ok: true }))
 app.route('/create-order', createOrder)
 app.route('/create-preference', createPreference)
 app.route('/mp-webhook', webhook)
+
+// Painel admin — autenticado (requireAdmin)
+app.route('/admin/users', adminUsers)
 
 // Preview de e-mail (somente dev)
 if (process.env.NODE_ENV !== 'production') {
