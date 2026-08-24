@@ -13,6 +13,7 @@ import {
   LogOut,
   BarChart2,
   Frame,
+  ClipboardList,
 } from 'lucide-react'
 import { cn } from '@/utils/cn'
 import { ExternalLink } from 'lucide-react'
@@ -27,6 +28,7 @@ const NAV_ITEMS = [
   { label: 'Palestrantes',  href: '/admin/palestrantes', icon: Mic2 },
   { label: 'Programação',   href: '/admin/programacao',  icon: Calendar },
   { label: 'Moldura',       href: '/admin/moldura',      icon: Frame },
+  { label: 'Pesquisa',      href: '/admin/pesquisa',     icon: ClipboardList },
   { label: 'Usuários',      href: '/admin/usuarios',     icon: Users },
 ]
 
