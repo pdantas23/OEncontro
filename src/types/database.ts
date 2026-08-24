@@ -473,6 +473,103 @@ export interface Database {
         }
         Relationships: []
       }
+
+      survey_responses_encontro: {
+        Row: {
+          id: string
+          created_at: string
+          survey_version: string
+          overall_rating: number
+          asp_organizacao: number
+          asp_credenciamento: number
+          asp_local: number
+          asp_alimentacao: number
+          asp_programacao: number
+          asp_pontualidade: number
+          asp_experiencia: number
+          asp_comunicacao: number
+          asp_networking: number
+          asp_equipe: number
+          content_relevance: string
+          spk_qualidade: number
+          spk_relevancia: number
+          spk_aplicabilidade: number
+          spk_didatica: number
+          spk_dominio: number
+          spk_inspiracao: number
+          spk_experiencia: number
+          speaker_return: string
+          highlight: string
+          nps: number
+          wanted_speakers: string | null
+          wanted_topics: string | null
+          improvement: string | null
+          one_word: string | null
+        }
+        Insert: {
+          id?: string
+          created_at?: string
+          survey_version?: string
+          overall_rating: number
+          asp_organizacao: number
+          asp_credenciamento: number
+          asp_local: number
+          asp_alimentacao: number
+          asp_programacao: number
+          asp_pontualidade: number
+          asp_experiencia: number
+          asp_comunicacao: number
+          asp_networking: number
+          asp_equipe: number
+          content_relevance: string
+          spk_qualidade: number
+          spk_relevancia: number
+          spk_aplicabilidade: number
+          spk_didatica: number
+          spk_dominio: number
+          spk_inspiracao: number
+          spk_experiencia: number
+          speaker_return: string
+          highlight: string
+          nps: number
+          wanted_speakers?: string | null
+          wanted_topics?: string | null
+          improvement?: string | null
+          one_word?: string | null
+        }
+        Update: {
+          id?: string
+          created_at?: string
+          survey_version?: string
+          overall_rating?: number
+          asp_organizacao?: number
+          asp_credenciamento?: number
+          asp_local?: number
+          asp_alimentacao?: number
+          asp_programacao?: number
+          asp_pontualidade?: number
+          asp_experiencia?: number
+          asp_comunicacao?: number
+          asp_networking?: number
+          asp_equipe?: number
+          content_relevance?: string
+          spk_qualidade?: number
+          spk_relevancia?: number
+          spk_aplicabilidade?: number
+          spk_didatica?: number
+          spk_dominio?: number
+          spk_inspiracao?: number
+          spk_experiencia?: number
+          speaker_return?: string
+          highlight?: string
+          nps?: number
+          wanted_speakers?: string | null
+          wanted_topics?: string | null
+          improvement?: string | null
+          one_word?: string | null
+        }
+        Relationships: []
+      }
     }
     // eslint-disable-next-line @typescript-eslint/no-empty-object-type
     Views: {}
